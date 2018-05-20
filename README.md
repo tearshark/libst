@@ -17,7 +17,7 @@
 	任务调用链。通过make_task/marshal_task生成，然后不停的then/marshal生成调用链。
 ```
 
-#then
+# then
 ```C++
 	template<class _Ftype>
 	auto then(_Ftype && fn)
@@ -32,7 +32,7 @@
 	如果上一个调用链节点的返回值是std::tuple<...>类型，则fn的入参，是tuple解包后的参数。目前要求参数个数/类型精确匹配。
 ```
 
-#marshal
+# marshal
 ```C++
 	template<class _Fcb, class... _Types>
 	auto marshal(_Fcb&& fn, _Types&&... args)
@@ -47,13 +47,13 @@
 	回调函数的入参，作为本任务节点的返回值
 ```
 
-#get_future
+# get_future
 ```C++
 	get_future() 
 	返回最后一个链节点的返回值
 ```
 
-#get_executor
+# get_executor
 ```C++
 	get_executor() 
 	返回task_executor<FirstState>，以便于在指定的task_context里运行
@@ -62,7 +62,7 @@
 	执行整个调用链。args...参数必须跟第一个链节点需要的参数匹配
 ```
 
-#make_task
+# make_task
 ```C++
 	template<class _Ftype>
 	task<> make_task(_Ftype && fn);
@@ -70,7 +70,7 @@
 	_Ftype是一个函数(对象)
 ```
 
-#marshal_task
+# marshal_task
 ```C++
 	template<class _Fcb, class... _Args>
 	task<> marshal_task(_Fcb&& fn, _Args&&... args)
@@ -79,14 +79,14 @@
 	_Fcb的返回值不再关心。并且_Fcb内部要么抛异常，要么就必须调用回调函数，并且不关心回调函数的返回值
 ```
 
-#task_node
+# task_node
 ```C++
 	template<class _Rtype, class... _PrevArgs>
 	struct task_node
 	包装任务链节点。通过内嵌promise实现，提供get_future()功能
 ```
 
-#task_context
+# task_context
 ```C++
 	concept task_context
 	代表任务运行环境/线程的虚类，需要外部实现某种运行方案
@@ -98,7 +98,7 @@
 	使用std::async运行task_context的实现。注意，需要在某个地方定义async_context。
 ```
 
-#executor
+# executor
 ```C++
 	template<class _State>
 	struct task_executor : public executor
@@ -106,6 +106,6 @@
 ```
 
 
-#roadmap
+# roadmap
 - when_all/when_any
 - 支持Android/iOS
