@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="libst">
+      <UniqueIdentifier>{64ec0d5b-e409-4784-bc96-f64553280a0d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="example">
+      <UniqueIdentifier>{adb6d292-ba69-4e5c-8086-7a10e657a1cd}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\task.h">
+      <Filter>libst</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\task_context.h">
+      <Filter>libst</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\task_invoke_traits.h">
+      <Filter>libst</Filter>
+    </ClInclude>
+    <ClInclude Include="..\example\threadpool_context.h">
+      <Filter>example</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="libtask.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\example\task_link.cpp">
+      <Filter>example</Filter>
+    </ClCompile>
+    <ClCompile Include="..\example\task_async.cpp">
+      <Filter>example</Filter>
+    </ClCompile>
+    <ClCompile Include="..\example\task_optimal_move.cpp">
+      <Filter>example</Filter>
+    </ClCompile>
+    <ClCompile Include="..\example\task_conflict.cpp">
+      <Filter>example</Filter>
+    </ClCompile>
+    <ClCompile Include="..\example\task_exception.cpp">
+      <Filter>example</Filter>
+    </ClCompile>
+    <ClCompile Include="..\example\task_thread_safe.cpp">
+      <Filter>example</Filter>
+    </ClCompile>
+    <ClCompile Include="..\example\task_marshal.cpp">
+      <Filter>example</Filter>
+    </ClCompile>
+    <ClCompile Include="..\example\task_when_all.cpp">
+      <Filter>example</Filter>
+    </ClCompile>
+    <ClCompile Include="..\example\task_when_any.cpp">
+      <Filter>example</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\include\task_cbnode.inl">
+      <Filter>libst</Filter>
+    </None>
+    <None Include="..\include\task_detail.inl">
+      <Filter>libst</Filter>
+    </None>
+    <None Include="..\include\task_exception.inl">
+      <Filter>libst</Filter>
+    </None>
+    <None Include="..\include\task_executor.inl">
+      <Filter>libst</Filter>
+    </None>
+    <None Include="..\include\task_node.inl">
+      <Filter>libst</Filter>
+    </None>
+    <None Include="..\include\task_utils.inl">
+      <Filter>libst</Filter>
+    </None>
+  </ItemGroup>
+</Project>
