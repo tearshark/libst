@@ -104,9 +104,11 @@ namespace lib_shark_task
 	};
 
 	//在task_state_result基础上，提供操作执行当前任务节点，执行下一个任务节点的函数
-	template<class _Rtype, class task_function, class then_function>
+	template<class _Rtype, class _Taskf, class _Thenf = std::function<void()>>
 	struct node_impl : public node_result_<_Rtype>
 	{
+		using task_function = _Taskf;
+		using then_function = _Thenf;
 	protected:
 		task_function			_Thiz;			//执行当前任务节点
 		then_function			_Then;			//执行下一个任务节点
@@ -121,6 +123,11 @@ namespace lib_shark_task
 			: _Thiz(fn)
 		{
 		}
+		node_impl(const task_set_exception_agent_sptr & exp)
+			: node_result_(exp)
+		{
+		}
+
 		node_impl(node_impl && _Right) = default;
 		node_impl & operator = (node_impl && _Right) = default;
 		node_impl(const node_impl & _Right) = delete;
@@ -151,8 +158,6 @@ namespace lib_shark_task
 		using result_type = std::remove_reference_t<_Rtype>;
 		using result_tuple = detail::package_tuple_t<result_type>;
 		using args_tuple_type = std::tuple<_PrevArgs...>;
-		using task_function = std::function<result_type(_PrevArgs...)>;
-		using then_function = detail::unpack_tuple_fn_t<void, result_type>;
 
 		using node_impl::node_impl;
 
@@ -234,13 +239,11 @@ namespace lib_shark_task
 	};
 
 	template<class... _PrevArgs>
-	struct task_node<void, _PrevArgs...> : public node_impl<int, std::function<void(_PrevArgs...)>, std::function<void()> >
+	struct task_node<void, _PrevArgs...> : public node_impl<int, std::function<void(_PrevArgs...)>>
 	{
 		using result_type = void;
 		using result_tuple = std::tuple<>;
 		using args_tuple_type = std::tuple<_PrevArgs...>;
-		using task_function = std::function<void(_PrevArgs...)>;
-		using then_function = std::function<void()>;
 
 		using node_impl::node_impl;
 

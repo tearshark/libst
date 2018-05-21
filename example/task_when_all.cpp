@@ -5,16 +5,20 @@ void test_task_when_all()
 {
 	using namespace st;
 
-	auto t1 = make_task([] 
+	auto t1 = make_task([]()
 	{
 		std::cout << "first task." << std::endl;
 		return 1;
 	});
 	auto t2 = make_task([]
 	{
-		std::cout << "first task." << std::endl;
+		std::cout << "second task." << std::endl;
 		return 2.0;
 	});
 
-	when_all(t1, t2);
+	auto tall = when_all(std::move(t1), std::move(t2));
+	tall();
+
+	auto f = tall.get_future();
+	f.get();
 }

@@ -158,6 +158,22 @@ namespace lib_shark_task
 				return base_type::template Invoke_(&_Tobj::operator(), obj, std::forward<_Rest>(args)...);
 			}
 		};
+
+		template<class _Ty, class... _Args>
+		struct invoke_enable
+		{
+		private:
+			template<typename U>
+			static auto check_(int) -> 
+			decltype(std::declval<U>()(std::declval<_Args>()...), std::true_type());
+
+			template<typename U>
+			static std::false_type check_(...); 
+		public: 
+			static const bool value = std::is_same<decltype(check_<_Ty>(0)), std::true_type>::value; 
+		};
+		template<class _Ty, class... _Args>
+		constexpr bool invoke_enable_v = invoke_enable<_Ty, _Args...>::value;
 	}
 	
 }
