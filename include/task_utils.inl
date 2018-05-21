@@ -41,3 +41,6 @@ namespace std
 	}
 }
 #endif
+
+template<class _Ty>
+struct DEBUG_TYPE;

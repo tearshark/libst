@@ -16,9 +16,16 @@ void test_task_when_all()
 		return 2.0;
 	});
 
-	auto tall = when_all(std::move(t1), std::move(t2));
+	auto tall = when_all(t1, t2).then([](int v1, double v2) 
+	{
+		std::cout << "all completed." << std::endl;
+		return v1 + v2;
+	});
+
 	tall();
 
 	auto f = tall.get_future();
-	f.get();
+	auto val = f.get();
+
+	std::cout << "end value is " << val << std::endl;
 }

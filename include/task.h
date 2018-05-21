@@ -88,6 +88,8 @@ namespace lib_shark_task
 			assert(_Last != nullptr);
 			assert(!_Last->is_retrieved());
 
+			//DEBUG_TYPE<last_type> dt1;
+
 			using then_result = detail::result_of_t<std::remove_reference_t<_Ftype>>;
 			using next_node_type = detail::unpack_tuple_node_t<then_result, last_type>;
 
@@ -166,9 +168,7 @@ namespace lib_shark_task
 			assert(!_Last->is_retrieved());
 			using next_node_type = std::remove_reference_t<_Nnode>;
 
-			_Exception->_Impl = st_next.get();
 			_Last->_Set_then_if(detail::_Set_then_helper<next_node_type>{ st_next });
-
 			return task<next_node_type, node_type>{_Exception, st_next, _Node};
 		}
 
@@ -179,9 +179,7 @@ namespace lib_shark_task
 			assert(!_Last->is_retrieved());
 			using next_node_type = std::remove_reference_t<_Nnode>;
 
-			_Exception->_Impl = st_next.get();
 			_Last->_Set_then_if(detail::_Set_then_ctx_helper<_Context, next_node_type>{ &ctx, st_next });
-
 			return task<next_node_type, node_type>{_Exception, st_next, _Node};
 		}
 	};

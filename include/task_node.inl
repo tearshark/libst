@@ -155,9 +155,9 @@ namespace lib_shark_task
 						std::function<std::remove_reference_t<_Rtype>(_PrevArgs...)>, 
 						detail::unpack_tuple_fn_t<void, std::remove_reference_t<_Rtype>> >
 	{
-		using result_type = std::remove_reference_t<_Rtype>;
-		using result_tuple = detail::package_tuple_t<result_type>;
-		using args_tuple_type = std::tuple<_PrevArgs...>;
+		using result_type = std::remove_reference_t<_Rtype>;			//本节点的结果的类型
+		using result_tuple = detail::package_tuple_t<result_type>;		//本节点的结果打包成tuple<>后的类型
+		using args_tuple_type = std::tuple<_PrevArgs...>;				//本节点的入参打包成tuple<>后的类型
 
 		using node_impl::node_impl;
 
@@ -241,9 +241,9 @@ namespace lib_shark_task
 	template<class... _PrevArgs>
 	struct task_node<void, _PrevArgs...> : public node_impl<int, std::function<void(_PrevArgs...)>>
 	{
-		using result_type = void;
-		using result_tuple = std::tuple<>;
-		using args_tuple_type = std::tuple<_PrevArgs...>;
+		using result_type = void;									//本节点的结果的类型
+		using result_tuple = std::tuple<>;							//本节点的结果打包成tuple<>后的类型
+		using args_tuple_type = std::tuple<_PrevArgs...>;			//本节点的入参打包成tuple<>后的类型
 
 		using node_impl::node_impl;
 

@@ -97,14 +97,9 @@ namespace lib_shark_task
 	{
 		using this_type = task_cbnode<_Cbtype, _PrevArgs...>;
 
-		using relay_type = detail::callback_relay<this_type, _Cbtype>;
-		friend relay_type;
-
-		using result_type = detail::args_tuple_t<_Cbtype>;
-		using result_tuple = result_type;
-		using args_tuple_type = std::tuple<_PrevArgs...>;
-		using task_function = std::function<void(relay_type &&, _PrevArgs...)>;
-		using then_function = detail::unpack_tuple_fn_t<void, result_type>;
+		using result_type = detail::args_tuple_t<_Cbtype>;			//本节点的结果的类型
+		using result_tuple = result_type;							//本节点的结果打包成tuple<>后的类型
+		using args_tuple_type = std::tuple<_PrevArgs...>;			//本节点的入参打包成tuple<>后的类型
 
 		template<class _Fx, class... _Types>
 		task_cbnode(const task_set_exception_agent_sptr & exp, _Fx&& _Func, _Types&&... args)
@@ -206,6 +201,12 @@ namespace lib_shark_task
 				_Then = then_function{ std::forward<_Ftype>(fn) };
 			}
 		}
+
+	public:
+		using relay_type = detail::callback_relay<this_type, _Cbtype>;
+		friend relay_type;
+		using task_function = std::function<void(relay_type &&, _PrevArgs...)>;
+		using then_function = detail::unpack_tuple_fn_t<void, result_type>;
 	protected:
 		task_function			_Thiz;			//执行当前任务节点
 		then_function			_Then;			//执行下一个任务节点
