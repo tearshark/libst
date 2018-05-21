@@ -20,6 +20,9 @@
 
 namespace lib_shark_task
 {
+	constexpr auto _cb = std::placeholders::_1;
+	//using _ = decltype(std::ignore);
+
 	template<class _LastNode, class _FirstNode>
 	struct task
 	{
@@ -90,10 +93,13 @@ namespace lib_shark_task
 			assert(_Last != nullptr);
 			assert(!_Last->is_retrieved());
 
-			//DEBUG_TYPE<last_type> dt1;
-
 			using then_result = detail::result_of_t<std::remove_reference_t<_Ftype>>;
-			using next_node_type = detail::unpack_tuple_node_t<then_result, last_type>;
+			using args_tuple_type = detail::args_tuple_t<std::remove_reference_t<_Ftype>>;
+			using last_tuple_type = detail::package_tuple_t<last_type>;
+
+			static_assert(std::tuple_size<args_tuple_type>::value <= std::tuple_size<last_tuple_type>::value, "");
+
+			using next_node_type = detail::unpack_tuple_node_t<then_result, args_tuple_type/*last_type*/>;
 
 			auto st_next = std::make_shared<next_node_type>(fn, _Exception);
 			_Exception->_Impl = st_next.get();
@@ -111,7 +117,12 @@ namespace lib_shark_task
 			assert(!_Last->is_retrieved());
 
 			using then_result = detail::result_of_t<std::remove_reference_t<_Ftype>>;
-			using next_node_type = detail::unpack_tuple_node_t<then_result, last_type>;
+			using args_tuple_type = detail::args_tuple_t<std::remove_reference_t<_Ftype>>;
+			using last_tuple_type = detail::package_tuple_t<last_type>;
+
+			static_assert(std::tuple_size<args_tuple_type>::value <= std::tuple_size<last_tuple_type>::value, "");
+
+			using next_node_type = detail::unpack_tuple_node_t<then_result, args_tuple_type/*last_type*/>;
 
 			auto st_next = std::make_shared<next_node_type>(std::forward<_Ftype>(fn), _Exception);
 			_Exception->_Impl = st_next.get();

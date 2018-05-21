@@ -47,6 +47,8 @@ namespace lib_shark_task
 		template<class... _PrevArgs2>
 		bool invoke_thiz(_PrevArgs2&&... args)
 		{
+			static_assert(sizeof...(_PrevArgs2) >= typename std::tuple_size<args_tuple_type>::value, "");
+
 			try
 			{
 				{
@@ -67,6 +69,8 @@ namespace lib_shark_task
 		template<class _PrevTuple>
 		bool invoke_thiz_tuple(_PrevTuple&& args)
 		{
+			static_assert(typename std::tuple_size<_PrevTuple>::value >= typename std::tuple_size<args_tuple_type>::value, "");
+
 			try
 			{
 				{

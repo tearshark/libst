@@ -123,6 +123,8 @@ namespace lib_shark_task
 		template<class... _PrevArgs2>
 		bool invoke_thiz(_PrevArgs2&&... args)
 		{
+			static_assert(sizeof...(_PrevArgs2) >= typename std::tuple_size<args_tuple_type>::value, "");
+
 			try
 			{
 				task_function fn = _Move_thiz();
@@ -130,7 +132,8 @@ namespace lib_shark_task
 				detail::callback_relay<this_type, _Cbtype> cb;
 				cb._Assoc_node = std::static_pointer_cast<task_cbnode>(this->shared_from_this());
 
-				fn(std::move(cb), std::forward<_PrevArgs2>(args)...);
+				detail::_Apply_then(fn, std::move(cb), std::forward<_PrevArgs2>(args)...);
+				//fn(std::move(cb), std::forward<_PrevArgs2>(args)...);
 			}
 			catch (...)
 			{
@@ -143,6 +146,8 @@ namespace lib_shark_task
 		template<class _PrevTuple>
 		bool invoke_thiz_tuple(_PrevTuple&& args)
 		{
+			static_assert(typename std::tuple_size<_PrevTuple>::value >= typename std::tuple_size<args_tuple_type>::value, "");
+
 			try
 			{
 				task_function fn = _Move_thiz();
@@ -150,7 +155,8 @@ namespace lib_shark_task
 				detail::callback_relay<this_type, _Cbtype> cb;
 				cb._Assoc_node = std::static_pointer_cast<task_cbnode>(this->shared_from_this());
 
-				std::apply(fn, std::tuple_cat(std::tuple<relay_type>{std::move(cb)}, std::forward<_PrevTuple>(args)));
+				detail::_Apply_function<task_function>::template _Apply_cat(fn, std::move(cb), std::forward<_PrevTuple>(args));
+				//std::apply(fn, std::tuple_cat(std::tuple<relay_type>{std::move(cb)}, std::forward<_PrevTuple>(args)));
 			}
 			catch (...)
 			{
@@ -171,7 +177,8 @@ namespace lib_shark_task
 
 			try
 			{
-				detail::_Invoke_then(fn, std::move(_Get_value()));
+				detail::_Apply_then(fn, std::move(_Get_value()));
+				//detail::_Invoke_then(fn, std::move(_Get_value()));
 			}
 			catch (...)
 			{
@@ -188,7 +195,8 @@ namespace lib_shark_task
 			{
 				try
 				{
-					detail::_Invoke_then(fn, std::move(_Get_value()));
+					detail::_Apply_then2<then_function>(std::forward<_Ftype>(fn), std::move(_Get_value()));
+					//detail::_Invoke_then(fn, std::move(_Get_value()));
 				}
 				catch (...)
 				{
@@ -229,6 +237,4 @@ namespace lib_shark_task
 	{
 		using task_cbnode<_Cbtype, _PrevArgs...>::task_cbnode;
 	};
-
-	constexpr auto _cb = std::placeholders::_1;
 }

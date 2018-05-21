@@ -107,8 +107,8 @@ namespace lib_shark_task
 	template<class _Rtype, class _Taskf, class _Thenf = std::function<void()>>
 	struct node_impl : public node_result_<_Rtype>
 	{
-		using task_function = _Taskf;
-		using then_function = _Thenf;
+		using task_function = std::remove_reference_t<_Taskf>;
+		using then_function = std::remove_reference_t<_Thenf>;
 	protected:
 		task_function			_Thiz;			//执行当前任务节点
 		then_function			_Then;			//执行下一个任务节点
@@ -164,10 +164,13 @@ namespace lib_shark_task
 		template<class... _PrevArgs2>
 		bool invoke_thiz(_PrevArgs2&&... args)
 		{
+			static_assert(sizeof...(_PrevArgs2) >= typename std::tuple_size<args_tuple_type>::value, "");
+
 			try
 			{
 				task_function fn = _Move_thiz();
-				_Set_value(fn(std::forward<_PrevArgs2>(args)...));
+				_Set_value(detail::_Apply_then(fn, std::forward<_PrevArgs2>(args)...));
+				//_Set_value(fn(std::forward<_PrevArgs2>(args)...));
 				_Ready = true;
 			}
 			catch (...)
@@ -181,10 +184,13 @@ namespace lib_shark_task
 		template<class _PrevTuple>
 		bool invoke_thiz_tuple(_PrevTuple&& args)
 		{
+			static_assert(typename std::tuple_size<_PrevTuple>::value >= typename std::tuple_size<args_tuple_type>::value, "");
+
 			try
 			{
 				task_function fn = _Move_thiz();
-				_Set_value(std::apply(fn, std::forward<_PrevTuple>(args)));
+				_Set_value(detail::_Apply_then(fn, std::forward<_PrevTuple>(args)));
+				//_Set_value(std::apply(fn, std::forward<_PrevTuple>(args)));
 				_Ready = true;
 			}
 			catch (...)
@@ -206,7 +212,8 @@ namespace lib_shark_task
 
 			try
 			{
-				detail::_Invoke_then(fn, std::move(_Get_value()));
+				detail::_Apply_then(fn, std::move(_Get_value()));
+				//detail::_Invoke_then(fn, std::move(_Get_value()));
 			}
 			catch (...)
 			{
@@ -223,7 +230,8 @@ namespace lib_shark_task
 			{
 				try
 				{
-					detail::_Invoke_then(fn, std::move(_Get_value()));
+					detail::_Apply_then2<then_function>(std::forward<_NextFx>(fn), std::move(_Get_value()));
+					//detail::_Invoke_then(fn, std::move(_Get_value()));
 				}
 				catch (...)
 				{
@@ -250,10 +258,13 @@ namespace lib_shark_task
 		template<class... _PrevArgs2>
 		bool invoke_thiz(_PrevArgs2&&... args)
 		{
+			static_assert(sizeof...(_PrevArgs2) >= typename std::tuple_size<args_tuple_type>::value, "");
+
 			try
 			{
 				task_function fn = _Move_thiz();
-				fn(std::forward<_PrevArgs2>(args)...);
+				detail::_Apply_then(fn, std::forward<_PrevArgs2>(args)...);
+				//fn(std::forward<_PrevArgs2>(args)...);
 				_Set_value(0);
 				_Ready = true;
 			}
@@ -268,10 +279,13 @@ namespace lib_shark_task
 		template<class _PrevTuple>
 		bool invoke_thiz_tuple(_PrevTuple&& args)
 		{
+			static_assert(typename std::tuple_size<_PrevTuple>::value >= typename std::tuple_size<args_tuple_type>::value, "");
+
 			try
 			{
 				task_function fn = _Move_thiz();
-				std::apply(fn, std::forward<_PrevTuple>(args));
+				detail::_Apply_then(fn, std::forward<_PrevTuple>(args));
+				//std::apply(fn, std::forward<_PrevTuple>(args));
 				_Set_value(0);
 				_Ready = true;
 			}

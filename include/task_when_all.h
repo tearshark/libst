@@ -60,14 +60,14 @@ namespace lib_shark_task
 		}
 	}
 
-	template<class _Ttuple, class... _PrevArgs>
-	struct task_all_node : public node_impl<std::tuple<_PrevArgs...>, std::function<void()>, std::function<void(_PrevArgs...)>>
+	template<class _Ttuple, class... _ResultArgs>
+	struct task_all_node : public node_impl<std::tuple<_ResultArgs...>, std::function<void()>, std::function<void(_ResultArgs...)>>
 	{
-		using this_type = task_when_one<_Ttuple, _PrevArgs...>;
+		using this_type = task_when_one<_Ttuple, _ResultArgs...>;
 
-		using result_type = std::tuple<_PrevArgs...>;
-		using result_tuple = result_type;
-		using args_tuple_type = std::tuple<>;
+		using result_type = std::tuple<_ResultArgs...>;		//本节点的结果的类型
+		using result_tuple = result_type;					//本节点的结果打包成tuple<>后的类型
+		using args_tuple_type = std::tuple<>;				//本节点的入参打包成tuple<>后的类型
 
 		using task_tuple = detail::package_tuple_t<_Ttuple>;
 		task_tuple			_All_tasks;
@@ -106,9 +106,11 @@ namespace lib_shark_task
 			}
 		}
 
-		template<class... _Args2>
-		bool invoke_thiz(_Args2&&... args)
+		template<class... Args2>
+		bool invoke_thiz(Args2&&... args)
 		{
+			static_assert(sizeof...(Args2) >= typename std::tuple_size<args_tuple_type>::value, "");
+
 			try
 			{
 				std::unique_lock<std::mutex> _Lock(_Mtx());
@@ -128,9 +130,11 @@ namespace lib_shark_task
 			return false;
 		}
 
-		template<class... _Args2>
-		bool invoke_thiz_tuple(std::tuple<_Args2...>&& args)
+		template<class _PrevTuple>
+		bool invoke_thiz_tuple(_PrevTuple&& args)
 		{
+			static_assert(typename std::tuple_size<_PrevTuple>::value >= typename std::tuple_size<args_tuple_type>::value, "");
+
 			try
 			{
 				std::unique_lock<std::mutex> _Lock(_Mtx());
@@ -139,7 +143,7 @@ namespace lib_shark_task
 
 				for_each(all_task, [&](auto & ts)
 				{
-					std::apply(ts, args...);
+					std::apply(ts, args);
 				});
 			}
 			catch (...)
@@ -161,7 +165,8 @@ namespace lib_shark_task
 
 			try
 			{
-				detail::_Invoke_then(fn, std::move(_Get_value()));
+				detail::_Apply_then(fn, std::move(_Get_value()));
+				//detail::_Invoke_then(fn, std::move(_Get_value()));
 			}
 			catch (...)
 			{
@@ -178,7 +183,8 @@ namespace lib_shark_task
 			{
 				try
 				{
-					detail::_Invoke_then(fn, std::move(_Get_value()));
+					detail::_Apply_then2<then_function>(std::forward<_NextFx>(fn), std::move(_Get_value()));
+					//detail::_Invoke_then(fn, std::move(_Get_value()));
 				}
 				catch (...)
 				{
@@ -192,10 +198,10 @@ namespace lib_shark_task
 			}
 		}
 	};
-	template<class _Ttuple, class... _PrevArgs>
-	struct task_all_node<_Ttuple, std::tuple<_PrevArgs...>> : public task_all_node<_Ttuple, _PrevArgs...>
+	template<class _Ttuple, class... _ResultArgs>
+	struct task_all_node<_Ttuple, std::tuple<_ResultArgs...>> : public task_all_node<_Ttuple, _ResultArgs...>
 	{
-		using task_all_node<_Ttuple, _PrevArgs...>::task_all_node;
+		using task_all_node<_Ttuple, _ResultArgs...>::task_all_node;
 	};
 
 

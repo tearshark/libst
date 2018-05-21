@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "task_when_all.h"
 
-void test_task_when_all()
+void test_task_when_all_1()
 {
 	using namespace st;
 
@@ -17,10 +17,10 @@ void test_task_when_all()
 	});
 
 	auto tall = when_all(t1, t2)
-		.then([](int v1, std::string str, double v2)
+		.then([](int, std::string, double v2)
 		{
 			std::cout << "all completed." << std::endl;
-			return v1 + v2;
+			return v2;
 		})
 		;
 
@@ -30,4 +30,9 @@ void test_task_when_all()
 	auto val = f.get();
 
 	std::cout << "end value is " << val << std::endl;
+}
+
+void test_task_when_all()
+{
+	test_task_when_all_1();
 }
