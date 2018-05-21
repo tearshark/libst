@@ -39,6 +39,12 @@
     <ClInclude Include="..\example\threadpool_context.h">
       <Filter>example</Filter>
     </ClInclude>
+    <ClInclude Include="..\example\semaphore.h">
+      <Filter>example</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\task_when_all.h">
+      <Filter>libst</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -92,6 +98,9 @@
       <Filter>libst</Filter>
     </None>
     <None Include="..\include\task_utils.inl">
+      <Filter>libst</Filter>
+    </None>
+    <None Include="..\include\task_when_node.inl">
       <Filter>libst</Filter>
     </None>
   </ItemGroup>

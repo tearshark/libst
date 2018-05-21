@@ -101,6 +101,7 @@ namespace lib_shark_task
 		friend relay_type;
 
 		using result_type = detail::args_tuple_t<_Cbtype>;
+		using result_tuple = result_type;
 		using args_tuple_type = std::tuple<_PrevArgs...>;
 		using task_function = std::function<void(relay_type &&, _PrevArgs...)>;
 		using then_function = detail::unpack_tuple_fn_t<void, result_type>;
@@ -220,6 +221,12 @@ namespace lib_shark_task
 			std::unique_lock<std::mutex> _Lock(_Mtx());
 			return std::move(_Then);			//强迫只能调用一次
 		}
+	};
+
+	template<class _Cbtype, class... _PrevArgs>
+	struct task_cbnode<_Cbtype, std::tuple<_PrevArgs...>> : public task_cbnode<_Cbtype, _PrevArgs...>
+	{
+		using task_cbnode<_Cbtype, _PrevArgs...>::task_cbnode;
 	};
 
 	constexpr auto _cb = std::placeholders::_1;

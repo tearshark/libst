@@ -151,10 +151,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\example\semaphore.h" />
     <ClInclude Include="..\example\threadpool_context.h" />
     <ClInclude Include="..\include\task.h" />
     <ClInclude Include="..\include\task_context.h" />
     <ClInclude Include="..\include\task_invoke_traits.h" />
+    <ClInclude Include="..\include\task_when_all.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
@@ -183,6 +185,7 @@
     <None Include="..\include\task_executor.inl" />
     <None Include="..\include\task_node.inl" />
     <None Include="..\include\task_utils.inl" />
+    <None Include="..\include\task_when_node.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -16,38 +16,68 @@ namespace lib_shark_task
 		template<size_t _Idx, class _Fx>
 		using args_of_t = typename invoke_traits<_Fx>::template args_element<_Idx>::type;	//萃取函数(对象)_Fx的特定索引的参数类型
 
-#if 0
-		template<size_t _Idx, class... _Args>
-		void _Copy_to_tuple_impl(std::tuple<_Args...> & t) {}
-
-		template<size_t _Idx, class... _Args, class _Ty, class... _Rest>
-		void _Copy_to_tuple_impl(std::tuple<_Args...> & t, _Ty && val, _Rest&&... args)
+		template<size_t _Idx, class _Tuple>
+		void _Fill_to_tuple_impl(_Tuple & t) {}
+		template<size_t _Idx, class _Tuple, class _Ty, class... _Rest>
+		void _Fill_to_tuple_impl(_Tuple & t, _Ty && val, _Rest&&... args)
 		{
 			std::get<_Idx>(t) = std::forward<_Ty>(val);
-			_Copy_to_tuple_impl<_Idx + 1>(t, std::forward<_Rest>(args)...);
+			_Fill_to_tuple_impl<_Idx + 1>(t, std::forward<_Rest>(args)...);
 		}
 
-		template<class... _Args>
-		void _Copy_to_tuple(std::tuple<_Args...> & t, _Args&&... args)
+		template<size_t _Idx, class _Tuple, class... _Args>
+		void _Fill_to_tuple(_Tuple & t, _Args&&... args)
 		{
-			_Copy_to_tuple_impl<0>(t, std::forward<_Args>(args)...);
+			_Fill_to_tuple_impl<_Idx>(t, std::forward<_Args>(args)...);
 		}
-		template<class... _Args>
-		void _Copy_to_tuple(std::tuple<_Args...> & t, const _Args&... args)
+		template<size_t _Idx, class _Tuple, class... _Args>
+		void _Fill_to_tuple(_Tuple & t, const _Args&... args)
 		{
-			_Copy_to_tuple_impl<0>(t, args...);
+			_Fill_to_tuple_impl<_Idx>(t, args...);
 		}
-		template<class... _Args>
-		void _Copy_to_tuple(std::tuple<_Args...> & t, std::tuple<_Args...> && t2)
+
+		template<size_t _Idx>
+		struct _Copy_to_tuple_impl
 		{
-			t = std::forward<std::tuple<_Args...>>(t2);
-		}
-		template<class... _Args>
-		void _Copy_to_tuple(std::tuple<_Args...> & t, const std::tuple<_Args...> & t2)
+			template<size_t _Offset, class _T1, class _T2>
+			static void copy(_T1 & target, _T2&& source)
+			{
+				std::get<_Offset + _Idx - 1>(target) = std::get<_Idx - 1>(source);
+				_Copy_to_tuple_impl<_Idx - 1>::template copy<_Offset>(target, source);
+			}			
+			template<size_t _Offset, class _T1, class _T2>
+			static void move(_T1 & target, _T2&& source)
+			{
+				std::get<_Offset + _Idx - 1>(target) = std::move(std::get<_Idx - 1>(source));
+				_Copy_to_tuple_impl<_Idx - 1>::template move<_Offset>(target, source);
+			}
+		};
+		template<>
+		struct _Copy_to_tuple_impl<0>
 		{
-			t = t2;
+			template<size_t _Offset, class _T1, class _T2>
+			static void copy(_T1 & target, _T2&& source)
+			{
+			}
+			template<size_t _Offset, class _T1, class _T2>
+			static void move(_T1 & target, _T2&& source)
+			{
+			}
+		};
+
+		template<size_t _Idx, class _Tuple, class _Tuple2>
+		void _Copy_to_tuple(_Tuple & target, _Tuple2 && source)
+		{
+			static_assert(std::tuple_size_v<_Tuple> >= std::tuple_size_v<_Tuple2> +_Idx, "index is out of range, _Idx must less than t1 size - t2 size");
+			_Copy_to_tuple_impl<std::tuple_size_v<_Tuple2>>::copy<_Idx>(target, source);
 		}
-#endif
+		template<size_t _Idx, class _Tuple, class _Tuple2>
+		void _Move_to_tuple(_Tuple & target, _Tuple2 && source)
+		{
+			static_assert(std::tuple_size_v<_Tuple> >= std::tuple_size_v<_Tuple2> +_Idx, "index is out of range, _Idx must less than t1 size - t2 size");
+			_Copy_to_tuple_impl<std::tuple_size_v<_Tuple2>>::move<_Idx>(target, source);
+		}
+
 
 		//使用上一个节点的返回值，作为下一个节点的参数调用下一个任务节点
 		//如果上一个节点的返回值是std::tuple<...>，则拆包tuple为变参模板
@@ -181,5 +211,18 @@ namespace lib_shark_task
 				_Ctx->add(exe);
 			}
 		};
+
+		template<class _Tuple>
+		struct package_tuple
+		{
+			using type = std::tuple<_Tuple>;
+		};
+		template<class... _Args>
+		struct package_tuple<std::tuple<_Args...>>
+		{
+			using type = std::tuple<_Args...>;
+		};
+		template<class _Tuple>
+		using package_tuple_t = typename package_tuple<_Tuple>::type;
 	}
 }

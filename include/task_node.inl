@@ -81,6 +81,10 @@ namespace lib_shark_task
 		{
 			return std::move(_Ptr()->_Get_value(true));
 		}
+		_Rtype & _Peek_value()
+		{
+			return _Ptr()->_Result;
+		}
 		//…Ë÷√¥Êµƒ÷µ
 		template<class _Ty2>
 		void _Set_value(_Ty2 && val)
@@ -145,6 +149,7 @@ namespace lib_shark_task
 						detail::unpack_tuple_fn_t<void, std::remove_reference_t<_Rtype>> >
 	{
 		using result_type = std::remove_reference_t<_Rtype>;
+		using result_tuple = detail::package_tuple_t<result_type>;
 		using args_tuple_type = std::tuple<_PrevArgs...>;
 		using task_function = std::function<result_type(_PrevArgs...)>;
 		using then_function = detail::unpack_tuple_fn_t<void, result_type>;
@@ -232,6 +237,7 @@ namespace lib_shark_task
 	struct task_node<void, _PrevArgs...> : public node_impl<int, std::function<void(_PrevArgs...)>, std::function<void()> >
 	{
 		using result_type = void;
+		using result_tuple = std::tuple<>;
 		using args_tuple_type = std::tuple<_PrevArgs...>;
 		using task_function = std::function<void(_PrevArgs...)>;
 		using then_function = std::function<void()>;
@@ -316,4 +322,9 @@ namespace lib_shark_task
 		}
 	};
 
+	template<class _Rtype, class... _PrevArgs>
+	struct task_node<_Rtype, std::tuple<_PrevArgs...>> : public task_node<_Rtype, _PrevArgs...>
+	{
+		using task_node<_Rtype, _PrevArgs...>::task_node;
+	};
 }

@@ -18,17 +18,16 @@
 
 namespace lib_shark_task
 {
-	template<class _FirstNode, class _LastNode>
+	template<class _LastNode, class _FirstNode>
 	struct task
 	{
 		using node_type = _FirstNode;
-		using result_type = typename node_type::result_type;
+		using node_type_sptr = std::shared_ptr<node_type>;
 
 		using last_node = _LastNode;
 		using last_type = typename last_node::result_type;
-
 	private:
-		mutable std::shared_ptr<node_type>	_Node;				//第一个任务节点。其后的then/marshal，这个节点是不变化的
+		mutable node_type_sptr				_Node;				//第一个任务节点。其后的then/marshal，这个节点是不变化的
 		std::shared_ptr<last_node>			_Last;				//最后一个任务节点。每次then/marshal后，新的task的这个类型和值发生变化
 		task_set_exception_agent_sptr		_Exception;			//传递异常的代理接口
 	public:
@@ -96,7 +95,7 @@ namespace lib_shark_task
 			_Exception->_Impl = st_next.get();
 			_Last->_Set_then_if(detail::_Set_then_helper<next_node_type>{ st_next });
 
-			return task<node_type, next_node_type>{_Node, st_next, _Exception};
+			return task<next_node_type, node_type>{_Node, st_next, _Exception};
 		}
 
 		//根据下一个任务节点，生成新的任务链对象
@@ -114,7 +113,7 @@ namespace lib_shark_task
 			_Exception->_Impl = st_next.get();
 			_Last->_Set_then_if(detail::_Set_then_ctx_helper<_Context, next_node_type>{ &ctx, st_next });
 
-			return task<node_type, next_node_type>{_Node, st_next, _Exception};
+			return task<next_node_type, node_type>{_Node, st_next, _Exception};
 		}
 
 		template<class _Fcb, class... _Types>
@@ -133,7 +132,7 @@ namespace lib_shark_task
 			_Exception->_Impl = st_next.get();
 			_Last->_Set_then_if(detail::_Set_then_helper<next_node_type>{ st_next });
 
-			return task<node_type, next_node_type>{_Node, st_next, _Exception};
+			return task<next_node_type, node_type>{_Node, st_next, _Exception};
 		}
 
 		template<class _Context, class _Fcb, class... _Types>
@@ -152,7 +151,38 @@ namespace lib_shark_task
 			_Exception->_Impl = st_next.get();
 			_Last->_Set_then_if(detail::_Set_then_ctx_helper<_Context, next_node_type>{ &ctx, st_next });
 
-			return task<node_type, next_node_type>{_Node, st_next, _Exception};
+			return task<next_node_type, node_type>{_Node, st_next, _Exception};
+		}
+
+		task_set_exception_agent_sptr & _Get_exception_agent()
+		{
+			return _Exception;
+		}
+
+		template<class _Nnode>
+		auto _Then_node(const std::shared_ptr<_Nnode> & st_next)
+		{
+			assert(_Last != nullptr);
+			assert(!_Last->is_retrieved());
+			using next_node_type = std::remove_reference_t<_Nnode>;
+
+			_Exception->_Impl = st_next.get();
+			_Last->_Set_then_if(detail::_Set_then_helper<next_node_type>{ st_next });
+
+			return task<next_node_type, node_type>{_Node, st_next, _Exception};
+		}
+
+		template<class _Context, class _Nnode>
+		auto _Then_node(_Context & ctx, const std::shared_ptr<_Nnode> & st_next)
+		{
+			assert(_Last != nullptr);
+			assert(!_Last->is_retrieved());
+			using next_node_type = std::remove_reference_t<_Nnode>;
+
+			_Exception->_Impl = st_next.get();
+			_Last->_Set_then_if(detail::_Set_then_ctx_helper<_Context, next_node_type>{ &ctx, st_next });
+
+			return task<next_node_type, node_type>{_Node, st_next, _Exception};
 		}
 	};
 
@@ -217,7 +247,7 @@ namespace lib_shark_task
 
 		using ret_type_rrt = std::remove_reference_t<ret_type>;
 
-		static_assert(sizeof...(_Args) == std::tuple_size_v<args_tuple_type>, "");
+		static_assert(sizeof...(_Args) == std::tuple_size_v<args_tuple_type>, "'args' count must equal argument count of 'fn'");
 
 		using first_node_type = task_node<ret_type_rrt>;
 
@@ -237,7 +267,7 @@ namespace lib_shark_task
 	{
 		using fun_type_rrt = std::remove_reference_t<_Fcb>;
 		using args_tuple_type = typename detail::invoke_traits<fun_type_rrt>::args_tuple_type;
-		static_assert(sizeof...(_Args) == std::tuple_size_v<args_tuple_type>, "");
+		static_assert(sizeof...(_Args) == std::tuple_size_v<args_tuple_type>, "'args' count must equal argument count of 'fn'");
 
 		using callback_type3 = detail::args_of_t<detail::get_holder_index<_Args...>::index, _Fcb>;
 		using callback_type2 = std::remove_cv_t<std::remove_reference_t<callback_type3>>;
