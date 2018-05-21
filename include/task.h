@@ -27,11 +27,11 @@ namespace lib_shark_task
 		using last_node = _LastNode;
 		using last_type = typename last_node::result_type;
 	private:
-		mutable node_type_sptr				_Node;				//第一个任务节点。其后的then/marshal，这个节点是不变化的
-		std::shared_ptr<last_node>			_Last;				//最后一个任务节点。每次then/marshal后，新的task的这个类型和值发生变化
 		task_set_exception_agent_sptr		_Exception;			//传递异常的代理接口
+		std::shared_ptr<last_node>			_Last;				//最后一个任务节点。每次then/marshal后，新的task的这个类型和值发生变化
+		mutable node_type_sptr				_Node;				//第一个任务节点。其后的then/marshal，这个节点是不变化的
 	public:
-		task(const std::shared_ptr<node_type> & first, const std::shared_ptr<last_node> & last, const task_set_exception_agent_sptr & exp)
+		task(const task_set_exception_agent_sptr & exp, const std::shared_ptr<last_node> & last, const std::shared_ptr<node_type> & first)
 			: _Node(first)
 			, _Last(last)
 			, _Exception(exp)
@@ -95,7 +95,7 @@ namespace lib_shark_task
 			_Exception->_Impl = st_next.get();
 			_Last->_Set_then_if(detail::_Set_then_helper<next_node_type>{ st_next });
 
-			return task<next_node_type, node_type>{_Node, st_next, _Exception};
+			return task<next_node_type, node_type>{_Exception, st_next, _Node};
 		}
 
 		//根据下一个任务节点，生成新的任务链对象
@@ -113,7 +113,7 @@ namespace lib_shark_task
 			_Exception->_Impl = st_next.get();
 			_Last->_Set_then_if(detail::_Set_then_ctx_helper<_Context, next_node_type>{ &ctx, st_next });
 
-			return task<next_node_type, node_type>{_Node, st_next, _Exception};
+			return task<next_node_type, node_type>{_Exception, st_next, _Node};
 		}
 
 		template<class _Fcb, class... _Types>
@@ -132,7 +132,7 @@ namespace lib_shark_task
 			_Exception->_Impl = st_next.get();
 			_Last->_Set_then_if(detail::_Set_then_helper<next_node_type>{ st_next });
 
-			return task<next_node_type, node_type>{_Node, st_next, _Exception};
+			return task<next_node_type, node_type>{_Exception, st_next, _Node};
 		}
 
 		template<class _Context, class _Fcb, class... _Types>
@@ -151,7 +151,7 @@ namespace lib_shark_task
 			_Exception->_Impl = st_next.get();
 			_Last->_Set_then_if(detail::_Set_then_ctx_helper<_Context, next_node_type>{ &ctx, st_next });
 
-			return task<next_node_type, node_type>{_Node, st_next, _Exception};
+			return task<next_node_type, node_type>{_Exception, st_next, _Node};
 		}
 
 		task_set_exception_agent_sptr & _Get_exception_agent()
@@ -169,7 +169,7 @@ namespace lib_shark_task
 			_Exception->_Impl = st_next.get();
 			_Last->_Set_then_if(detail::_Set_then_helper<next_node_type>{ st_next });
 
-			return task<next_node_type, node_type>{_Node, st_next, _Exception};
+			return task<next_node_type, node_type>{_Exception, st_next, _Node};
 		}
 
 		template<class _Context, class _Nnode>
@@ -182,7 +182,7 @@ namespace lib_shark_task
 			_Exception->_Impl = st_next.get();
 			_Last->_Set_then_if(detail::_Set_then_ctx_helper<_Context, next_node_type>{ &ctx, st_next });
 
-			return task<next_node_type, node_type>{_Node, st_next, _Exception};
+			return task<next_node_type, node_type>{_Exception, st_next, _Node};
 		}
 	};
 
@@ -203,7 +203,7 @@ namespace lib_shark_task
 			auto st_next = std::make_shared<first_node_type>(std::forward<_Ftype>(fn), exp);
 			exp->_Impl = st_next.get();
 
-			return task<first_node_type, first_node_type>{st_next, st_next, exp};
+			return task<first_node_type, first_node_type>{exp, st_next, st_next};
 		}
 	};
 	template<>
@@ -223,7 +223,7 @@ namespace lib_shark_task
 			auto st_next = std::make_shared<first_node_type>(std::forward<_Ftype>(fn), exp);
 			exp->_Impl = st_next.get();
 
-			return task<first_node_type, first_node_type>{st_next, st_next, exp};
+			return task<first_node_type, first_node_type>{exp, st_next, st_next};
 		}
 	};
 
@@ -259,7 +259,7 @@ namespace lib_shark_task
 			}, exp);
 		exp->_Impl = st_next.get();
 
-		return task<first_node_type, first_node_type>{st_next, st_next, exp};
+		return task<first_node_type, first_node_type>{exp, st_next, st_next};
 	}
 
 	template<class _Fcb, class... _Args>
@@ -279,7 +279,7 @@ namespace lib_shark_task
 		auto st_next = std::make_shared<first_node_type>(exp, std::forward<_Fcb>(fn), std::forward<_Args>(args)...);
 		exp->_Impl = st_next.get();
 
-		return task<first_node_type, first_node_type>{st_next, st_next, exp};
+		return task<first_node_type, first_node_type>{exp, st_next, st_next};
 	}
 }
 

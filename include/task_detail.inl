@@ -224,5 +224,31 @@ namespace lib_shark_task
 		};
 		template<class _Tuple>
 		using package_tuple_t = typename package_tuple<_Tuple>::type;
+
+		template<class _Ty>
+		struct add_shared_ptr
+		{
+			using type = std::shared_ptr<_Ty>;
+		};
+		template<class _Ty>
+		struct add_shared_ptr<std::shared_ptr<_Ty>>
+		{
+			using type = std::shared_ptr<_Ty>;
+		};
+		template<class _Ty>
+		using add_shared_ptr_t = typename add_shared_ptr<_Ty>::type;
+
+		template<class _Tuple>
+		struct add_tuple_shared_ptr
+		{
+			using type = typename add_shared_ptr<_Tuple>::type;
+		};
+		template<class... _Args>
+		struct add_tuple_shared_ptr<std::tuple<_Args...>>
+		{
+			using type = std::tuple<add_shared_ptr_t<_Args>...>;
+		};
+		template<class _Ty>
+		using add_tuple_shared_ptr_t = typename add_tuple_shared_ptr<_Ty>::type;
 	}
 }
