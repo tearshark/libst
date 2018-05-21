@@ -5,6 +5,8 @@
 
 #pragma once
 
+#pragma warning(disable : 4503)			//任务链很容易类型名过长，所以，禁止这个警告
+
 #include <assert.h>
 #include <future>
 

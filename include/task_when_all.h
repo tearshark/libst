@@ -30,17 +30,18 @@ namespace lib_shark_task
 			static_assert(invoke_enable<std::remove_reference_t<_Task>>::value, "the task must be call without parames");
 
 			using tuple_type = decltype(declval_task_last_node_result_tuple<_Task>(tf));
+
 			using task_type = std::remove_reference_t<_Task>;
 			using result_tuple = typename _Anode::result_tuple;
 			using node_args_type = when_node_args<_Anode, result_tuple, _Idx>;
 
-			using next_node_type = task_when_one<node_args_type, typename task_type::last_type>;
+			using next_node_type = task_when_one<node_args_type, tuple_type>;
 
 			task_set_exception_agent_sptr exp = tf._Get_exception_agent();
 			exp->_Impl = all_node;
 
 			auto st_next = std::make_shared<next_node_type>(exp, all_node, node_idx, all_node->_Peek_tuple());
-			return tf._Then_node(st_next);
+			return tf.template _Then_node<next_node_type>(st_next);
 		}
 
 		template<size_t _Idx, class _Anode, class _Task, class... _TaskRest>
@@ -218,7 +219,7 @@ namespace lib_shark_task
 		auto st_first = std::make_shared<first_node_type>(exp, std::move(tfirst), std::move(rest)...);
 		exp->_Impl = st_first.get();
 
-		detail::when_all_impl(st_first.get(), st_first->_All_tasks, std::make_index_sequence<sizeof...(_TaskRest) + 1>{});
+		detail::when_all_impl(st_first.get(), st_first->_All_tasks, std::make_index_sequence<std::tuple_size_v<cated_task_t>>{});
 
 		return task<first_node_type, first_node_type>{exp, st_first, st_first};
 	}

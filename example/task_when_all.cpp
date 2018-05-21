@@ -8,7 +8,7 @@ void test_task_when_all()
 	auto t1 = make_task([]()
 	{
 		std::cout << "first task." << std::endl;
-		return 1;
+		return std::tuple<int, std::string>{ 1, "abc"s };
 	});
 	auto t2 = make_task([]
 	{
@@ -16,11 +16,13 @@ void test_task_when_all()
 		return 2.0;
 	});
 
-	auto tall = when_all(t1, t2).then([](int v1, double v2) 
-	{
-		std::cout << "all completed." << std::endl;
-		return v1 + v2;
-	});
+	auto tall = when_all(t1, t2)
+		.then([](int v1, std::string str, double v2)
+		{
+			std::cout << "all completed." << std::endl;
+			return v1 + v2;
+		})
+		;
 
 	tall();
 
