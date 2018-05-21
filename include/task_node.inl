@@ -31,7 +31,7 @@ namespace lib_shark_task
 		//此函数只应该被调用一次。
 		//并且外部没有调用过 _Set_then_if()
 		//内部不能调用过_Get_value()
-		std::future<_Rtype> get_future()
+		inline std::future<_Rtype> get_future()
 		{
 			assert(!is_retrieved());
 
@@ -40,13 +40,13 @@ namespace lib_shark_task
 		}
 
 		//结果是否已经准备好了，线程安全
-		bool is_ready() const
+		inline bool is_ready() const
 		{
 			return _Ready;
 		}
 
 		//是否已经调用过get_future/_Set_then_if/_Get_value之一
-		bool is_retrieved() const
+		inline bool is_retrieved() const
 		{
 			std::unique_lock<std::mutex> _Lock(_Mtx());
 
@@ -59,7 +59,7 @@ namespace lib_shark_task
 			_Ptr()->_Set_exception(std::forward<std::exception_ptr>(val), false);
 		}
 	protected:
-		std::_Associated_state<_Rtype> * _Ptr() const
+		inline std::_Associated_state<_Rtype> * _Ptr() const
 		{
 			return _State._Ptr();
 		}
@@ -77,27 +77,27 @@ namespace lib_shark_task
 			_Future_retrieved = true;
 		}
 		//获取存的值，只能调用一次
-		_Rtype && _Get_value()
+		inline _Rtype && _Get_value()
 		{
 			return std::move(_Ptr()->_Get_value(true));
 		}
-		_Rtype & _Peek_value()
+		inline _Rtype & _Peek_value()
 		{
 			return _Ptr()->_Result;
 		}
 		//设置存的值
 		template<class _Ty2>
-		void _Set_value(_Ty2 && val)
+		inline void _Set_value(_Ty2 && val)
 		{
 			_Ptr()->_Set_value(std::forward<_Ty2>(val), false);
 		}
 		//设置异常
-		void _Set_Agent_exception(std::exception_ptr && val)
+		inline void _Set_Agent_exception(std::exception_ptr && val)
 		{
 			_Exception->_Set_exception(std::current_exception());
 		}
 		//对外提供的mutex实例
-		std::mutex & _Mtx() const
+		inline std::mutex & _Mtx() const
 		{
 			return _Ptr()->_Mtx;
 		}
@@ -134,13 +134,13 @@ namespace lib_shark_task
 		node_impl & operator = (const node_impl & _Right) = delete;
 	protected:
 		//取执行当前任务节点的函数，只能取一次。线程安全
-		task_function _Move_thiz()
+		inline task_function _Move_thiz()
 		{
 			std::unique_lock<std::mutex> _Lock(_Mtx());
 			return std::move(_Thiz);			//强迫只能调用一次
 		}
 		//取执行下一个任务节点的函数，只能取一次。线程安全
-		then_function _Move_then()
+		inline then_function _Move_then()
 		{
 			std::unique_lock<std::mutex> _Lock(_Mtx());
 			return std::move(_Then);			//强迫只能调用一次

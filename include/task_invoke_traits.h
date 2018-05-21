@@ -32,7 +32,7 @@ namespace lib_shark_task
 
 			//调用此类函数的辅助方法
 			template<class _Fx, class... _Rest>
-			static _Ret Invoke_(const _Fx & f, _Args&&... args, _Rest...)
+			static inline _Ret Invoke_(const _Fx & f, _Args&&... args, _Rest...)
 			{
 				return f(std::forward<_Args>(args)...);
 			}
@@ -74,7 +74,7 @@ namespace lib_shark_task
 
 			typedef _Ret(_Ctype::*pointer_type)(_Args...);
 			template<class... _Rest>
-			static _Ret Invoke_(const pointer_type & f, this_args_type obj, _Args&&... args, _Rest...)
+			static inline _Ret Invoke_(const pointer_type & f, this_args_type obj, _Args&&... args, _Rest...)
 			{
 				return (obj.*f)(std::forward<_Args>(args)...);
 			}
@@ -90,7 +90,7 @@ namespace lib_shark_task
 
 			typedef _Ret(_Ctype::*pointer_type)(_Args...) const;
 			template<class... _Rest>
-			static _Ret Invoke_(const pointer_type & f, this_args_type obj, _Args&&... args, _Rest...)
+			static inline _Ret Invoke_(const pointer_type & f, this_args_type obj, _Args&&... args, _Rest...)
 			{
 				return (obj.*f)(std::forward<_Args>(args)...);
 			}
@@ -106,7 +106,7 @@ namespace lib_shark_task
 
 			typedef _Ret(_Ctype::*pointer_type)(_Args...) volatile;
 			template<class... _Rest>
-			static _Ret Invoke_(const pointer_type & f, this_args_type obj, _Args&&... args, _Rest...)
+			static inline _Ret Invoke_(const pointer_type & f, this_args_type obj, _Args&&... args, _Rest...)
 			{
 				return (obj.*f)(std::forward<_Args>(args)...);
 			}
@@ -122,7 +122,7 @@ namespace lib_shark_task
 
 			typedef _Ret(_Ctype::*pointer_type)(_Args...) const volatile;
 			template<class... _Rest>
-			static _Ret Invoke_(const pointer_type & f, this_args_type obj, _Args&&... args, _Rest...)
+			static inline _Ret Invoke_(const pointer_type & f, this_args_type obj, _Args&&... args, _Rest...)
 			{
 				return (obj.*f)(std::forward<_Args>(args)...);
 			}
@@ -153,27 +153,11 @@ namespace lib_shark_task
 			};
 
 			template<class... _Rest>
-			static decltype(auto) Invoke_(this_args_type obj, _Rest&&... args)
+			static inline decltype(auto) Invoke_(this_args_type obj, _Rest&&... args)
 			{
 				return base_type::template Invoke_(&_Tobj::operator(), obj, std::forward<_Rest>(args)...);
 			}
 		};
-
-		template<class _Ty, class... _Args>
-		struct invoke_enable
-		{
-		private:
-			template<typename U>
-			static auto check_(int) -> 
-			decltype(std::declval<U>()(std::declval<_Args>()...), std::true_type());
-
-			template<typename U>
-			static std::false_type check_(...); 
-		public: 
-			static const bool value = std::is_same<decltype(check_<_Ty>(0)), std::true_type>::value; 
-		};
-		template<class _Ty, class... _Args>
-		constexpr bool invoke_enable_v = invoke_enable<_Ty, _Args...>::value;
 	}
 	
 }

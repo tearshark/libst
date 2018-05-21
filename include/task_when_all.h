@@ -27,8 +27,6 @@ namespace lib_shark_task
 		template<size_t _Idx, class _Anode, class _Task>
 		auto when_all_one_impl(_Anode * all_node, size_t node_idx, _Task && tf)
 		{
-			static_assert(invoke_enable<std::remove_reference_t<_Task>>::value, "the task must be call without parames");
-
 			using tuple_type = decltype(declval_task_last_node_result_tuple<_Task>(tf));
 
 			using task_type = std::remove_reference_t<_Task>;
@@ -228,5 +226,11 @@ namespace lib_shark_task
 		detail::when_all_impl(st_first.get(), st_first->_All_tasks, std::make_index_sequence<std::tuple_size_v<cated_task_t>>{});
 
 		return task<first_node_type, first_node_type>{exp, st_first, st_first};
+	}
+
+	template<class _Iter, typename _Fty = decltype(*std::declval<_Iter>())>
+	auto when_all(_Iter begin, _Iter end)
+	{
+
 	}
 }

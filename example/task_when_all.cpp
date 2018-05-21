@@ -17,10 +17,10 @@ void test_task_when_all_1()
 	});
 
 	auto tall = when_all(t1, t2)
-		.then([](int, std::string, double v2)
+		.then([](int v1, std::string, double v2)
 		{
 			std::cout << "all completed." << std::endl;
-			return v2;
+			return v1 + v2;
 		})
 		;
 

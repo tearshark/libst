@@ -69,7 +69,7 @@ namespace lib_shark_task
 			std::shared_ptr<_Stype> _Assoc_node;
 
 			template<class... _Types2>
-			void operator()(_Types2&&... args)
+			inline void operator()(_Types2&&... args)
 			{
 				_Assoc_node->_Do_callback(std::forward<_Types2>(args)...);
 			}
@@ -219,13 +219,13 @@ namespace lib_shark_task
 		task_function			_Thiz;			//执行当前任务节点
 		then_function			_Then;			//执行下一个任务节点
 												//取执行当前任务节点的函数，只能取一次。线程安全
-		task_function _Move_thiz()
+		inline task_function _Move_thiz()
 		{
 			std::unique_lock<std::mutex> _Lock(_Mtx());
 			return std::move(_Thiz);			//强迫只能调用一次
 		}
 		//取执行下一个任务节点的函数，只能取一次。线程安全
-		then_function _Move_then()
+		inline then_function _Move_then()
 		{
 			std::unique_lock<std::mutex> _Lock(_Mtx());
 			return std::move(_Then);			//强迫只能调用一次

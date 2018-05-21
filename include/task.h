@@ -69,7 +69,7 @@ namespace lib_shark_task
 		}
 
 		//获取最后一个任务节点，对应的future。
-		auto get_future()
+		inline auto get_future()
 		{
 			assert(!_Last->is_retrieved());
 			return _Last->get_future();
@@ -77,7 +77,7 @@ namespace lib_shark_task
 
 		//执行器只能获取一次。
 		//获取完毕后，自身不能再调用operator()了----毕竟是run_once语义
-		auto get_executor()
+		inline auto get_executor()
 		{
 			if (_Node == nullptr)
 				std::_Throw_future_error(
@@ -88,7 +88,7 @@ namespace lib_shark_task
 
 		//根据下一个任务节点，生成新的任务链对象
 		template<class _Ftype>
-		auto then(_Ftype && fn)
+		inline auto then(_Ftype && fn)
 		{
 			assert(_Last != nullptr);
 			assert(!_Last->is_retrieved());
@@ -111,7 +111,7 @@ namespace lib_shark_task
 		//根据下一个任务节点，生成新的任务链对象
 		//指定此任务节点必须在ctx所代表的线程/时机里运行
 		template<class _Context, class _Ftype>
-		auto then(_Context & ctx, _Ftype && fn)
+		inline auto then(_Context & ctx, _Ftype && fn)
 		{
 			assert(_Last != nullptr);
 			assert(!_Last->is_retrieved());
@@ -132,7 +132,7 @@ namespace lib_shark_task
 		}
 
 		template<class _Fcb, class... _Types>
-		auto marshal(_Fcb&& fn, _Types&&... args)
+		inline auto marshal(_Fcb&& fn, _Types&&... args)
 		{
 			assert(_Last != nullptr);
 			assert(!_Last->is_retrieved());
@@ -151,7 +151,7 @@ namespace lib_shark_task
 		}
 
 		template<class _Context, class _Fcb, class... _Types>
-		auto marshal(_Context & ctx, _Fcb&& fn, _Types&&... args)
+		inline auto marshal(_Context & ctx, _Fcb&& fn, _Types&&... args)
 		{
 			assert(_Last != nullptr);
 			assert(!_Last->is_retrieved());
@@ -169,13 +169,13 @@ namespace lib_shark_task
 			return task<next_node_type, node_type>{_Exception, st_next, _Node};
 		}
 
-		task_set_exception_agent_sptr & _Get_exception_agent()
+		inline task_set_exception_agent_sptr & _Get_exception_agent()
 		{
 			return _Exception;
 		}
 
 		template<class _Nnode>
-		auto _Then_node(const std::shared_ptr<_Nnode> & st_next)
+		inline auto _Then_node(const std::shared_ptr<_Nnode> & st_next)
 		{
 			assert(_Last != nullptr);
 			assert(!_Last->is_retrieved());
@@ -186,7 +186,7 @@ namespace lib_shark_task
 		}
 
 		template<class _Context, class _Nnode>
-		auto _Then_node(_Context & ctx, const std::shared_ptr<_Nnode> & st_next)
+		inline auto _Then_node(_Context & ctx, const std::shared_ptr<_Nnode> & st_next)
 		{
 			assert(_Last != nullptr);
 			assert(!_Last->is_retrieved());
@@ -201,7 +201,7 @@ namespace lib_shark_task
 	struct _Make_task_0_impl
 	{
 		template<class _Ftype>
-		static auto make(_Ftype && fn)
+		static inline auto make(_Ftype && fn)
 		{
 			using fun_type_rrt = std::remove_reference_t<_Ftype>;
 			using ret_type = detail::result_of_t<fun_type_rrt>;
@@ -221,7 +221,7 @@ namespace lib_shark_task
 	struct _Make_task_0_impl<0>
 	{
 		template<class _Ftype>
-		static auto make(_Ftype && fn)
+		static inline auto make(_Ftype && fn)
 		{
 			using fun_type_rrt = std::remove_reference_t<_Ftype>;
 			using ret_type = detail::result_of_t<fun_type_rrt>;
@@ -240,7 +240,7 @@ namespace lib_shark_task
 
 	//根据一个新的任务节点，生成一个全新的任务链
 	template<class _Ftype>
-	auto make_task(_Ftype && fn)
+	inline auto make_task(_Ftype && fn)
 	{
 		using fun_type_rrt = std::remove_reference_t<_Ftype>;
 		using args_tuple_type = typename detail::invoke_traits<fun_type_rrt>::args_tuple_type;
@@ -250,7 +250,7 @@ namespace lib_shark_task
 
 	//根据一个新的任务节点，生成一个全新的任务链
 	template<class _Ftype, class... _Args>
-	auto make_task(_Ftype && fn, _Args&&... args)
+	inline auto make_task(_Ftype && fn, _Args&&... args)
 	{
 		using fun_type_rrt = std::remove_reference_t<_Ftype>;
 		using ret_type = detail::result_of_t<fun_type_rrt>;
@@ -274,7 +274,7 @@ namespace lib_shark_task
 	}
 
 	template<class _Fcb, class... _Args>
-	auto marshal_task(_Fcb&& fn, _Args&&... args)
+	inline auto marshal_task(_Fcb&& fn, _Args&&... args)
 	{
 		using fun_type_rrt = std::remove_reference_t<_Fcb>;
 		using args_tuple_type = typename detail::invoke_traits<fun_type_rrt>::args_tuple_type;

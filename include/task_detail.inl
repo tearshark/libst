@@ -17,21 +17,21 @@ namespace lib_shark_task
 		using args_of_t = typename invoke_traits<_Fx>::template args_element<_Idx>::type;	//萃取函数(对象)_Fx的特定索引的参数类型
 
 		template<size_t _Idx, class _Tuple>
-		void _Fill_to_tuple_impl(_Tuple & t) {}
+		inline void _Fill_to_tuple_impl(_Tuple & t) {}
 		template<size_t _Idx, class _Tuple, class _Ty, class... _Rest>
-		void _Fill_to_tuple_impl(_Tuple & t, _Ty && val, _Rest&&... args)
+		inline void _Fill_to_tuple_impl(_Tuple & t, _Ty && val, _Rest&&... args)
 		{
 			std::get<_Idx>(t) = std::forward<_Ty>(val);
 			_Fill_to_tuple_impl<_Idx + 1>(t, std::forward<_Rest>(args)...);
 		}
 
 		template<size_t _Idx, class _Tuple, class... _Args>
-		void _Fill_to_tuple(_Tuple & t, _Args&&... args)
+		inline void _Fill_to_tuple(_Tuple & t, _Args&&... args)
 		{
 			_Fill_to_tuple_impl<_Idx>(t, std::forward<_Args>(args)...);
 		}
 		template<size_t _Idx, class _Tuple, class... _Args>
-		void _Fill_to_tuple(_Tuple & t, const _Args&... args)
+		inline void _Fill_to_tuple(_Tuple & t, const _Args&... args)
 		{
 			_Fill_to_tuple_impl<_Idx>(t, args...);
 		}
@@ -40,13 +40,13 @@ namespace lib_shark_task
 		struct _Copy_to_tuple_impl
 		{
 			template<size_t _Offset, class _T1, class _T2>
-			static void copy(_T1 & target, _T2&& source)
+			static inline void copy(_T1 & target, _T2&& source)
 			{
 				std::get<_Offset + _Idx - 1>(target) = std::get<_Idx - 1>(source);
 				_Copy_to_tuple_impl<_Idx - 1>::template copy<_Offset>(target, source);
 			}			
 			template<size_t _Offset, class _T1, class _T2>
-			static void move(_T1 & target, _T2&& source)
+			static inline void move(_T1 & target, _T2&& source)
 			{
 				std::get<_Offset + _Idx - 1>(target) = std::move(std::get<_Idx - 1>(source));
 				_Copy_to_tuple_impl<_Idx - 1>::template move<_Offset>(target, source);
@@ -56,23 +56,23 @@ namespace lib_shark_task
 		struct _Copy_to_tuple_impl<0>
 		{
 			template<size_t _Offset, class _T1, class _T2>
-			static void copy(_T1 & target, _T2&& source)
+			static inline void copy(_T1 & target, _T2&& source)
 			{
 			}
 			template<size_t _Offset, class _T1, class _T2>
-			static void move(_T1 & target, _T2&& source)
+			static inline void move(_T1 & target, _T2&& source)
 			{
 			}
 		};
 
 		template<size_t _Idx, class _Tuple, class _Tuple2>
-		void _Copy_to_tuple(_Tuple & target, _Tuple2 && source)
+		inline void _Copy_to_tuple(_Tuple & target, _Tuple2 && source)
 		{
 			static_assert(std::tuple_size_v<_Tuple> >= std::tuple_size_v<_Tuple2> +_Idx, "index is out of range, _Idx must less than t1 size - t2 size");
 			_Copy_to_tuple_impl<std::tuple_size_v<_Tuple2>>::copy<_Idx>(target, source);
 		}
 		template<size_t _Idx, class _Tuple, class _Tuple2>
-		void _Move_to_tuple(_Tuple & target, _Tuple2 && source)
+		inline void _Move_to_tuple(_Tuple & target, _Tuple2 && source)
 		{
 			static_assert(std::tuple_size_v<_Tuple> >= std::tuple_size_v<_Tuple2> +_Idx, "index is out of range, _Idx must less than t1 size - t2 size");
 			_Copy_to_tuple_impl<std::tuple_size_v<_Tuple2>>::move<_Idx>(target, source);
@@ -103,23 +103,23 @@ namespace lib_shark_task
 #pragma warning(push)
 #pragma warning(disable: 4100)	// TRANSITION, VSO#181496, unreferenced formal parameter
 			template<class _Fx, class... _Rest>
-			static decltype(auto) _Apply_impl(_Fx&& f, const _PrevArgs& args, _Rest&&... rest)
+			static inline decltype(auto) _Apply_impl(_Fx&& f, const _PrevArgs& args, _Rest&&... rest)
 			{
 				return std::forward<_Fx>(f)(args);
 			}
 			template<class _Fx, class... _Rest>
-			static decltype(auto) _Apply_impl(_Fx&& f, _PrevArgs& args, _Rest&&... rest)
+			static inline decltype(auto) _Apply_impl(_Fx&& f, _PrevArgs& args, _Rest&&... rest)
 			{
 				return std::forward<_Fx>(f)(std::forward<_PrevArgs>(args));
 			}
 			template<class _Fx, class... _Rest>
-			static decltype(auto) _Apply_impl(_Fx&& f, _PrevArgs&& args, _Rest&&... rest)
+			static inline decltype(auto) _Apply_impl(_Fx&& f, _PrevArgs&& args, _Rest&&... rest)
 			{
 				return std::forward<_Fx>(f)(std::forward<_PrevArgs>(args));
 			}
 #pragma warning(pop)
 			template<class _Fx, class... _PrevArgs2>
-			static decltype(auto) Invoke(_Fx&& f, _PrevArgs2&&... args)
+			static inline decltype(auto) Invoke(_Fx&& f, _PrevArgs2&&... args)
 			{
 				return _Apply_impl(std::forward<_Fx>(f), std::forward<_PrevArgs2>(args)...);
 				//return std::forward<_Fx>(f)(std::forward<_PrevArgs2>(args)...);
@@ -145,7 +145,7 @@ namespace lib_shark_task
 			};
 
 			template<class _Fx>
-			static decltype(auto) Invoke(_Fx & f)
+			static inline decltype(auto) Invoke(_Fx & f)
 			{
 				return f();
 			}
@@ -174,20 +174,20 @@ namespace lib_shark_task
 #pragma warning(push)
 #pragma warning(disable: 4100)	// TRANSITION, VSO#181496, unreferenced formal parameter
 			template<class _Fx, class... _Rest>
-			static decltype(auto) _Apply_impl2(_Fx&& f, _PrevArgs&&... args, _Rest&&... rest)
+			static inline decltype(auto) _Apply_impl2(_Fx&& f, _PrevArgs&&... args, _Rest&&... rest)
 			{
 				return std::forward<_Fx>(f)(std::forward<_PrevArgs>(args)...);
 			}
 
 			template<class _Fx, class _Tuple, size_t... _Idx>
-			static decltype(auto) _Apply_impl(_Fx& f, _Tuple&& t, std::index_sequence<_Idx...>)
+			static inline decltype(auto) _Apply_impl(_Fx& f, _Tuple&& t, std::index_sequence<_Idx...>)
 			{
 				return _Apply_impl2(std::forward<_Fx>(f), std::get<_Idx>(std::forward<_Tuple>(t))...);
 			}
 #pragma warning(pop)
 
 			template<class _Fx, class _Tuple>
-			static decltype(auto) Invoke(_Fx&& f, _Tuple&& args)
+			static inline decltype(auto) Invoke(_Fx&& f, _Tuple&& args)
 			{
 				//return _Apply_impl(std::forward<_Fx>(f), std::forward<_Tuple>(args), std::make_index_sequence<std::tuple_size<_Tuple>::value>{});
 				return std::apply(std::forward<_Fx>(f), std::forward<_Tuple>(args));
@@ -195,7 +195,7 @@ namespace lib_shark_task
 		};
 
 		template<class _Fx, class _PrevArgs>
-		void _Invoke_then(_Fx&& f, _PrevArgs&& val)
+		inline void _Invoke_then(_Fx&& f, _PrevArgs&& val)
 		{
 			using value_type = std::remove_reference_t<_PrevArgs>;
 			_Invoke_then_impl<value_type>::template Invoke<_Fx>(std::forward<_Fx>(f), std::forward<_PrevArgs>(val));
@@ -216,51 +216,51 @@ namespace lib_shark_task
 			using function_type = std::function<_Rx(_PrevArgs...)>;
 
 			template<class _Fx, class... _Rest>
-			static decltype(auto) _Apply_impl2(_Fx&& f, _PrevArgs&&... args, _Rest&&... rest)
+			static inline decltype(auto) _Apply_impl2(_Fx&& f, _PrevArgs&&... args, _Rest&&... rest)
 			{
 				return std::forward<_Fx>(f)(std::forward<_PrevArgs>(args)...);
 			}
 
 			template<class _Fx, class _Tuple, size_t... _Idx>
-			static decltype(auto) _Apply_impl(_Fx&& f, _Tuple&& t, std::index_sequence<_Idx...>)
+			static inline decltype(auto) _Apply_impl(_Fx&& f, _Tuple&& t, std::index_sequence<_Idx...>)
 			{
 				return _Apply_impl2(std::forward<_Fx>(f), std::get<_Idx>(std::forward<_Tuple>(t))...);
 			}
 			template<class _Fx, class _Ty1, class _Tuple, size_t... _Idx>
-			static decltype(auto) _Apply_cat_impl(_Fx&& f, _Ty1&& t1, _Tuple&& t, std::index_sequence<_Idx...>)
+			static inline decltype(auto) _Apply_cat_impl(_Fx&& f, _Ty1&& t1, _Tuple&& t, std::index_sequence<_Idx...>)
 			{
 				return _Apply_impl2(std::forward<_Fx>(f), std::forward<_Ty1>(t1), std::get<_Idx>(std::forward<_Tuple>(t))...);
 			}
 
 			//-------------------std::tuple<>版本-----------------------------------------------------------------------
 			template<class _Fx, class... _Tuple>
-			static decltype(auto) _Apply(_Fx&& f, std::tuple<_Tuple...>&& t)
+			static inline decltype(auto) _Apply(_Fx&& f, std::tuple<_Tuple...>&& t)
 			{
 				return _Apply_impl(std::forward<_Fx>(f), std::forward<std::tuple<_Tuple...>>(t), std::make_index_sequence<sizeof...(_Tuple)>{});
 			}
 			template<class _Fx, class... _Tuple>
-			static decltype(auto) _Apply(_Fx&& f, std::tuple<_Tuple...>& t)
+			static inline decltype(auto) _Apply(_Fx&& f, std::tuple<_Tuple...>& t)
 			{
 				return _Apply_impl(std::forward<_Fx>(f), t, std::make_index_sequence<sizeof...(_Tuple)>{});
 			}
 			template<class _Fx, class... _Tuple>
-			static decltype(auto) _Apply(_Fx&& f, const std::tuple<_Tuple...>& t)
+			static inline decltype(auto) _Apply(_Fx&& f, const std::tuple<_Tuple...>& t)
 			{
 				return _Apply_impl(std::forward<_Fx>(f), t, std::make_index_sequence<sizeof...(_Tuple)>{});
 			}
 
 			template<class _Fx, class _Ty1, class... _Tuple>
-			static decltype(auto) _Apply_cat(_Fx&& f, _Ty1&& t1, std::tuple<_Tuple...>&& t)
+			static inline decltype(auto) _Apply_cat(_Fx&& f, _Ty1&& t1, std::tuple<_Tuple...>&& t)
 			{
 				return _Apply_cat_impl(std::forward<_Fx>(f), std::forward<_Ty1>(t1), std::forward<std::tuple<_Tuple...>>(t), std::make_index_sequence<sizeof...(_Tuple)>{});
 			}
 			template<class _Fx, class _Ty1, class... _Tuple>
-			static decltype(auto) _Apply_cat(_Fx&& f, _Ty1&& t1, std::tuple<_Tuple...>& t)
+			static inline decltype(auto) _Apply_cat(_Fx&& f, _Ty1&& t1, std::tuple<_Tuple...>& t)
 			{
 				return _Apply_cat_impl(std::forward<_Fx>(f), std::forward<_Ty1>(t1), t, std::make_index_sequence<sizeof...(_Tuple)>{});
 			}
 			template<class _Fx, class _Ty1, class... _Tuple>
-			static decltype(auto) _Apply_cat(_Fx&& f, _Ty1&& t1, const std::tuple<_Tuple...>& t)
+			static inline decltype(auto) _Apply_cat(_Fx&& f, _Ty1&& t1, const std::tuple<_Tuple...>& t)
 			{
 				return _Apply_cat_impl(std::forward<_Fx>(f), std::forward<_Ty1>(t1), t, std::make_index_sequence<sizeof...(_Tuple)>{});
 			}
@@ -268,20 +268,20 @@ namespace lib_shark_task
 
 			//-------------------变参版本-------------------------------------------------------------------------------
 			template<class _Fx, class... _PrevArgs2>
-			static decltype(auto) _Apply(_Fx&& f, _PrevArgs2&&... t)
+			static inline decltype(auto) _Apply(_Fx&& f, _PrevArgs2&&... t)
 			{
 				return _Apply_impl2(std::forward<_Fx>(f), std::forward<_PrevArgs2>(t)...);
 			}
 			//-------------------变参版本-------------------------------------------------------------------------------
 		};
 		template<class _Fx, class... _PrevArgs2>
-		decltype(auto) _Apply_then(_Fx&& f, _PrevArgs2&&... args)
+		inline decltype(auto) _Apply_then(_Fx&& f, _PrevArgs2&&... args)
 		{
 			using function_type = std::remove_reference_t<_Fx>;
 			return _Apply_function<function_type>::template _Apply(std::forward<_Fx>(f), std::forward<_PrevArgs2>(args)...);
 		}
 		template<class _Fx, class _Fx2, class... _PrevArgs2>
-		decltype(auto) _Apply_then2(_Fx2&& f, _PrevArgs2&&... args)
+		inline decltype(auto) _Apply_then2(_Fx2&& f, _PrevArgs2&&... args)
 		{
 			using function_type = std::remove_reference_t<_Fx>;
 			return _Apply_function<function_type>::template _Apply(std::forward<_Fx2>(f), std::forward<_PrevArgs2>(args)...);
