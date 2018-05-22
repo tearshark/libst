@@ -1,22 +1,30 @@
 #pragma once
 #include "task_when_node.inl"
+#include "task_when_all.inl"
+#include "task_when_allv.inl"
 
 namespace lib_shark_task
 {
 	namespace detail
 	{
 		template<class _Task>
-		decltype(auto) declval_task_last_node(const _Task&)
+		decltype(auto) declval_task_last_node()
 		{
 			using task_type = std::decay_t<_Task>;
 			return std::declval<typename task_type::last_node>();
 		}
 		template<class _Task>
-		auto declval_task_last_node_result_tuple(const _Task&)
+		auto declval_task_last_node_result_tuple()
 		{
 			using task_type = std::decay_t<_Task>;
 			using node_type = typename task_type::last_node;
 			return std::declval<typename node_type::result_tuple>();
+		}
+		template<class _Task>
+		int check_task_type()
+		{
+			static_assert(detail::is_task_v<_Task>, "use 'make_task' or 'marshal_task' to create a task");
+			return 0;
 		}
 
 		template<size_t _Idx, class _Anode>
@@ -25,9 +33,9 @@ namespace lib_shark_task
 		}
 
 		template<size_t _Idx, class _Anode, class _Task>
-		auto when_all_one_impl(_Anode * all_node, size_t node_idx, _Task && tf)
+		auto when_all_one_impl(_Anode * all_node, size_t node_idx, _Task & tf)
 		{
-			using tuple_type = decltype(declval_task_last_node_result_tuple<_Task>(tf));
+			using tuple_type = decltype(declval_task_last_node_result_tuple<_Task>());
 
 			using task_type = std::remove_reference_t<_Task>;
 			using result_tuple = typename _Anode::result_tuple;
@@ -38,7 +46,7 @@ namespace lib_shark_task
 			task_set_exception_agent_sptr exp = tf._Get_exception_agent();
 			exp->_Impl = all_node;
 
-			auto st_next = std::make_shared<next_node_type>(exp, all_node, node_idx, all_node->_Peek_tuple());
+			auto st_next = std::make_shared<next_node_type>(exp, all_node, node_idx);
 			return tf.template _Then_node<next_node_type>(st_next);
 		}
 
@@ -47,7 +55,7 @@ namespace lib_shark_task
 		{
 			when_all_one_impl<_Idx>(all_node, node_idx, tf);
 
-			using tuple_type = decltype(declval_task_last_node_result_tuple<_Task>(tf));
+			using tuple_type = decltype(declval_task_last_node_result_tuple<_Task>());
 			when_all_impl2<_Idx + std::tuple_size_v<tuple_type>>(all_node, ++node_idx, std::forward<_TaskRest>(rest)...);
 		}
 
@@ -56,152 +64,33 @@ namespace lib_shark_task
 		{
 			when_all_impl2<0>(all_node, 0, std::get<Idx>(tasks)...);
 		}
+
+		template<class _Anode, class _Task>
+		auto when_allv_one_impl(_Anode * all_node, size_t node_idx, _Task & tf)
+		{
+			using tuple_type = decltype(declval_task_last_node_result_tuple<_Task>());
+
+			using task_type = std::remove_reference_t<_Task>;
+			using element_type = typename _Anode::element_type;
+			using node_args_type = when_node_args<_Anode, element_type, 0>;
+
+			using next_node_type = task_when_one<node_args_type, tuple_type>;
+
+			task_set_exception_agent_sptr exp = tf._Get_exception_agent();
+			exp->_Impl = all_node;
+
+			auto st_next = std::make_shared<next_node_type>(exp, all_node, node_idx);
+			return tf.template _Then_node<next_node_type>(st_next);
+		}
+
+		template<class _Anode, class _Cont>
+		void when_allv_impl(_Anode * all_node, _Cont & c)
+		{
+			size_t idx = 0;
+			for (auto & t : c)
+				when_allv_one_impl(all_node, idx++, t);
+		}
 	}
-
-	template<class _Ttuple, class... _ResultArgs>
-	struct task_all_node : public node_impl<std::tuple<_ResultArgs...>, std::function<void()>, std::function<void(_ResultArgs...)>>
-	{
-		using this_type = task_when_one<_Ttuple, _ResultArgs...>;
-
-		using result_type = std::tuple<_ResultArgs...>;		//本节点的结果的类型
-		using result_tuple = result_type;					//本节点的结果打包成tuple<>后的类型
-		using args_tuple_type = std::tuple<>;				//本节点的入参打包成tuple<>后的类型
-
-		using task_tuple = detail::package_tuple_t<_Ttuple>;
-		task_tuple			_All_tasks;
-
-		template<class... _Tasks>
-		task_all_node(const task_set_exception_agent_sptr & exp, _Tasks&&... ts)
-			: node_impl(exp)
-			, _All_tasks(std::forward<_Tasks>(ts)...)
-			, _Result_count(std::tuple_size_v<_Ttuple>)
-		{
-		}
-		task_all_node(task_all_node && _Right) = default;
-		task_all_node & operator = (task_all_node && _Right) = default;
-		task_all_node(const task_all_node & _Right) = delete;
-		task_all_node & operator = (const task_all_node & _Right) = delete;
-
-	private:
-		std::atomic<intptr_t> _Result_count;
-	public:
-		result_tuple & _Peek_tuple()
-		{
-			return _Peek_value();
-		}
-		std::mutex & _Peek_mutex()
-		{
-			return _Mtx();
-		}
-
-		void _On_result(size_t)
-		{
-			if (--_Result_count == 0)
-			{
-				_Ptr()->_Set_value(false);
-				_Ready = true;
-				invoke_then_if();
-			}
-		}
-
-		template<class... Args2>
-		bool invoke_thiz(Args2&&... args)
-		{
-			static_assert(sizeof...(Args2) >= typename std::tuple_size<args_tuple_type>::value, "");
-
-			try
-			{
-				std::unique_lock<std::mutex> _Lock(_Mtx());
-				task_tuple all_task = std::move(_All_tasks);
-				_Lock.unlock();
-
-				for_each(all_task, [&](auto & ts)
-				{
-					ts(args...);
-				});
-			}
-			catch (...)
-			{
-				_Set_Agent_exception(std::current_exception());
-			}
-
-			return false;
-		}
-
-		template<class _PrevTuple>
-		bool invoke_thiz_tuple(_PrevTuple&& args)
-		{
-			static_assert(typename std::tuple_size<_PrevTuple>::value >= typename std::tuple_size<args_tuple_type>::value, "");
-
-			try
-			{
-				std::unique_lock<std::mutex> _Lock(_Mtx());
-				task_tuple all_task = std::move(_All_tasks);
-				_Lock.unlock();
-
-				for_each(all_task, [&](auto & ts)
-				{
-					std::apply(ts, args);
-				});
-			}
-			catch (...)
-			{
-				_Set_Agent_exception(std::current_exception());
-			}
-
-			return false;
-		}
-
-		void invoke_then_if()
-		{
-			if (!_Ready)
-				return;
-
-			then_function fn = _Move_then();
-			if (!fn)
-				return;
-
-			try
-			{
-				detail::_Apply_then(fn, std::move(_Get_value()));
-				//detail::_Invoke_then(fn, std::move(_Get_value()));
-			}
-			catch (...)
-			{
-				_Set_Agent_exception(std::current_exception());
-			}
-		}
-
-		template<class _NextFx>
-		void _Set_then_if(_NextFx && fn)
-		{
-			_Set_retrieved();
-
-			if (_Ready)
-			{
-				try
-				{
-					detail::_Apply_then2<then_function>(std::forward<_NextFx>(fn), std::move(_Get_value()));
-					//detail::_Invoke_then(fn, std::move(_Get_value()));
-				}
-				catch (...)
-				{
-					_Set_Agent_exception(std::current_exception());
-				}
-			}
-			else
-			{
-				std::unique_lock<std::mutex> _Lock(_Mtx());
-				_Then = then_function{ std::forward<_NextFx>(fn) };
-			}
-		}
-	};
-	template<class _Ttuple, class... _ResultArgs>
-	struct task_all_node<_Ttuple, std::tuple<_ResultArgs...>> : public task_all_node<_Ttuple, _ResultArgs...>
-	{
-		using task_all_node<_Ttuple, _ResultArgs...>::task_all_node;
-	};
-
 
 	//等待多个任务完成
 	//多个任务的结果，放在一个拼合的tuple<>里
@@ -214,8 +103,11 @@ namespace lib_shark_task
 	template<class _Task, class... _TaskRest>
 	auto when_all(_Task& tfirst, _TaskRest&... rest)
 	{
+		static_assert(detail::is_task_v<_Task>, "use 'make_task' or 'marshal_task' to create a task");
+		(void)std::initializer_list<int>{detail::check_task_type<_TaskRest>()...};
+
 		using cated_task_t = std::tuple<std::remove_reference_t<_Task>, std::remove_reference_t<_TaskRest>...>;
-		using cated_result_t = decltype(std::tuple_cat(detail::declval_task_last_node_result_tuple<_Task>(tfirst), detail::declval_task_last_node_result_tuple<_TaskRest>(rest)...));
+		using cated_result_t = decltype(std::tuple_cat(detail::declval_task_last_node_result_tuple<_Task>(), detail::declval_task_last_node_result_tuple<_TaskRest>()...));
 
 		task_set_exception_agent_sptr exp = tfirst._Get_exception_agent();
 
@@ -228,9 +120,34 @@ namespace lib_shark_task
 		return task<first_node_type, first_node_type>{exp, st_first, st_first};
 	}
 
-	template<class _Iter, typename _Fty = decltype(*std::declval<_Iter>())>
-	auto when_all(_Iter begin, _Iter end)
+	//等待多个任务完成
+	//多个任务的结果类型肯定是一致的，数量运行时才能确定。故结果放在vector<>里
+	//首先做一个全新的task<task_allv_node, task_allv_node>
+	//	task_all_node::invoke_thiz 主要负责调用所有的任务，以便于开始任务。在任务为空时，当作全部任务已经完成处理。
+	//		为每个任务造一个task_when_one。
+	//		task_when_one 负责将结果放入到 task_allv_node的vector<>里，然后通知 task_allv_node 有一个任务完成
+	//		task_allv_node 在所有任务完成后，调用invoke_then_if
+	//
+	template<class _Iter, typename _Fty = std::enable_if_t<detail::is_task_v<decltype(*std::declval<_Iter>())>, decltype(*std::declval<_Iter>())>>
+	auto when_all(_Iter _First, _Iter _Last)
 	{
+		static_assert(detail::is_task_v<_Fty>, "_Iter must be a iterator of task container");
 
+		using task_type = std::remove_reference_t<_Fty>;
+		using result_type = decltype(detail::declval_task_last_node_result_tuple<task_type>());
+
+		task_set_exception_agent_sptr exp;
+		if (_First != _Last)
+			exp = _First->_Get_exception_agent();
+		else
+			exp = std::make_shared<task_set_exception_agent>();
+
+		using first_node_type = task_allv_node<task_type, result_type>;
+		auto st_first = std::make_shared<first_node_type>(exp, _First, _Last);
+		exp->_Impl = st_first.get();
+
+		detail::when_allv_impl(st_first.get(), st_first->_All_tasks);
+
+		return task<first_node_type, first_node_type>{exp, st_first, st_first};
 	}
 }

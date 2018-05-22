@@ -61,10 +61,11 @@
 	等待多个不同类型的任务完成。
 	多个任务的结果，放在一个拼合的tuple<>里。这个拼合的tuple<>，将作为下一个任务节点的入参，或者最后一个节点future<tuple<>>的结果。
 	
-	template<class _Iter, typename _Fty = decltype(*std::declval<_Iter>())>
+	template<class _Iter, typename _Fty = std::enable_if_t<detail::is_task_v<decltype(*std::declval<_Iter>())>, decltype(*std::declval<_Iter>())>>
 	auto when_all(_Iter begin, _Iter end)
 	等待一组相同类型的任务完成.
-	任务结果，放在vector<T>里。如果每个任务返回的是单值，则为vector<T>；如果返回的多值，则为vector<tuple<T>>。
+	多个任务的结果类型肯定是一致的，数量运行时才能确定。故结果放在vector<>里。
+	如果每个任务返回的是单值，则为vector<T>；如果返回的多值，则为vector<tuple<T>>。
 ```
 
 ## get_future

@@ -24,18 +24,6 @@ namespace lib_shark_task
 			std::get<_Idx>(t) = std::forward<_Ty>(val);
 			_Fill_to_tuple_impl<_Idx + 1>(t, std::forward<_Rest>(args)...);
 		}
-
-		template<size_t _Idx, class _Tuple, class... _Args>
-		inline void _Fill_to_tuple(_Tuple & t, _Args&&... args)
-		{
-			_Fill_to_tuple_impl<_Idx>(t, std::forward<_Args>(args)...);
-		}
-		template<size_t _Idx, class _Tuple, class... _Args>
-		inline void _Fill_to_tuple(_Tuple & t, const _Args&... args)
-		{
-			_Fill_to_tuple_impl<_Idx>(t, args...);
-		}
-
 		template<size_t _Idx>
 		struct _Copy_to_tuple_impl
 		{
@@ -65,6 +53,31 @@ namespace lib_shark_task
 			}
 		};
 
+		template<class _Tuple>
+		struct _Fill_to_tuple_selector
+		{
+			template<size_t _Idx, class _Ty, class... _Rest>
+			static inline void _fill(_Tuple & t, _Ty && val, _Rest&&... args)
+			{
+				t = std::forward<_Ty>(val);
+			}
+		};
+		template<class... _Args>
+		struct _Fill_to_tuple_selector<std::tuple<_Args...>>
+		{
+			using _Tuple = std::tuple<_Args...>;
+			template<size_t _Idx, class _Ty, class... _Rest>
+			static inline void _fill(_Tuple & t, _Ty && val, _Rest&&... args)
+			{
+				_Fill_to_tuple_impl<_Idx>(t, std::forward<_Ty>(val), std::forward<_Rest>(args)...);
+			}
+		};
+
+		template<size_t _Idx, class _Tuple, class... _Args>
+		inline void _Fill_to_tuple(_Tuple & t, _Args&&... args)
+		{
+			_Fill_to_tuple_selector<_Tuple>::template _fill<_Idx>(t, std::forward<_Args>(args)...);
+		}
 		template<size_t _Idx, class _Tuple, class _Tuple2>
 		inline void _Copy_to_tuple(_Tuple & target, _Tuple2 && source)
 		{

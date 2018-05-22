@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "task_when_all.h"
+#include <list>
 
 void test_task_when_all_1()
 {
@@ -32,7 +33,49 @@ void test_task_when_all_1()
 	std::cout << "end value is " << val << std::endl;
 }
 
+auto create_task_foo(int val)
+{
+	return st::make_task([=]
+	{
+		std::cout << "task foo, val = " << val << std::endl;
+		return val;
+	});
+}
+
+void test_task_when_all_2()
+{
+	using namespace st;
+
+	std::list<decltype(create_task_foo(0))> v;
+/*
+	for (int i = 1; i < 10; ++i)
+		v.emplace_back(create_task_foo(i));
+*/
+
+	auto tall = when_all(v.begin(), v.end())
+		.then([](std::vector<int> v)
+		{
+			if (v.empty())
+				std::cout << "none task." << std::endl;
+			else
+				std::cout << v.size() << " task(s) completed." << std::endl;
+
+			int val = 0;
+			for (auto t : v)
+				val += t;
+			return val;
+		})
+		;
+
+	tall();
+
+	auto f = tall.get_future();
+	auto val = f.get();
+	std::cout << "end value is " << val << std::endl;
+}
+
 void test_task_when_all()
 {
 	test_task_when_all_1();
+	test_task_when_all_2();
 }

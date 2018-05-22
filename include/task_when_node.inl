@@ -29,14 +29,11 @@ namespace lib_shark_task
 	private:
 		notify_node *						_Notify;
 		size_t								_Index;
-		std::reference_wrapper<cated_tuple> _Result;
-
 	public:
-		task_when_one(const task_set_exception_agent_sptr & exp, notify_node * nn, size_t idx, cated_tuple & ct)
+		task_when_one(const task_set_exception_agent_sptr & exp, notify_node * nn, size_t idx)
 			: node_impl(exp)
 			, _Notify(nn)
 			, _Index(idx)
-			, _Result(ct)
 		{
 		}
 		task_when_one(task_when_one && _Right) = default;
@@ -51,10 +48,7 @@ namespace lib_shark_task
 
 			try
 			{
-				{
-					std::unique_lock<std::mutex> _Lock(_Notify->_Peek_mutex());
-					detail::_Fill_to_tuple<cated_tuple_index>(_Result.get(), std::forward<_PrevArgs2>(args)...);
-				}
+				_Notify->template _Set_value_partial<cated_tuple_index>(_Index, std::forward<_PrevArgs2>(args)...);
 				_Set_value(0);
 				_Ready = true;
 			}
@@ -73,10 +67,7 @@ namespace lib_shark_task
 
 			try
 			{
-				{
-					std::unique_lock<std::mutex> _Lock(_Notify->_Peek_mutex());
-					detail::_Move_to_tuple<cated_tuple_index>(_Result.get(), std::forward<_PrevTuple>(args));
-				}
+				_Notify->template _Set_value_partial_t<cated_tuple_index>(_Index, std::forward<_PrevTuple>(args));
 				_Set_value(0);
 				_Ready = true;
 			}

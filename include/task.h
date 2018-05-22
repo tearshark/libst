@@ -197,6 +197,16 @@ namespace lib_shark_task
 		}
 	};
 
+	namespace detail
+	{
+		template<class _Ty>
+		struct is_task : public std::false_type {};
+		template<class _LastNode, class _FirstNode>
+		struct is_task<task<_LastNode, _FirstNode>> : public std::true_type {};
+		template<class _Ty>
+		constexpr bool is_task_v = is_task<std::remove_reference_t<_Ty>>::value;
+	}
+
 	template<size_t _N>
 	struct _Make_task_0_impl
 	{
