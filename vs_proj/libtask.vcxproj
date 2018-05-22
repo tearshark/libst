@@ -185,6 +185,8 @@
     <None Include="..\include\task_executor.inl" />
     <None Include="..\include\task_node.inl" />
     <None Include="..\include\task_utils.inl" />
+    <None Include="..\include\task_when_all.inl" />
+    <None Include="..\include\task_when_allv.inl" />
     <None Include="..\include\task_when_node.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
