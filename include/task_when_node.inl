@@ -1,5 +1,4 @@
 #pragma once
-#include <functional>
 
 namespace lib_shark_task
 {

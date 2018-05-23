@@ -1,4 +1,6 @@
 #pragma once
+
+#include <stack>
 #include "semaphore.h"
 
 struct threadpool_context

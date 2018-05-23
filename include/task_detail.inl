@@ -81,14 +81,14 @@ namespace lib_shark_task
 		template<size_t _Idx, class _Tuple, class _Tuple2>
 		inline void _Copy_to_tuple(_Tuple & target, _Tuple2 && source)
 		{
-			static_assert(std::tuple_size_v<_Tuple> >= std::tuple_size_v<_Tuple2> +_Idx, "index is out of range, _Idx must less than t1 size - t2 size");
-			_Copy_to_tuple_impl<std::tuple_size_v<_Tuple2>>::copy<_Idx>(target, source);
+			static_assert(std::tuple_size<_Tuple>::value >= std::tuple_size<_Tuple2>::value +_Idx, "index is out of range, _Idx must less than t1 size - t2 size");
+			_Copy_to_tuple_impl<std::tuple_size<_Tuple2>::value>::copy<_Idx>(target, source);
 		}
 		template<size_t _Idx, class _Tuple, class _Tuple2>
 		inline void _Move_to_tuple(_Tuple & target, _Tuple2 && source)
 		{
-			static_assert(std::tuple_size_v<_Tuple> >= std::tuple_size_v<_Tuple2> +_Idx, "index is out of range, _Idx must less than t1 size - t2 size");
-			_Copy_to_tuple_impl<std::tuple_size_v<_Tuple2>>::move<_Idx>(target, source);
+			static_assert(std::tuple_size<_Tuple>::value >= std::tuple_size<_Tuple2>::value +_Idx, "index is out of range, _Idx must less than t1 size - t2 size");
+			_Copy_to_tuple_impl<std::tuple_size<_Tuple2>::value>::move<_Idx>(target, source);
 		}
 
 

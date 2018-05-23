@@ -11,7 +11,7 @@ namespace lib_shark_task
 
 	struct task_set_exception_agent
 	{
-		std::atomic<task_set_exception *> _Impl = nullptr;
+		std::atomic<task_set_exception *> _Impl{ nullptr };
 		inline void _Set_exception(std::exception_ptr && val)
 		{
 			auto exp = _Impl.load();

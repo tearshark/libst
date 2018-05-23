@@ -19,7 +19,7 @@ namespace lib_shark_task
 		task_all_node(const task_set_exception_agent_sptr & exp, _Tasks&&... ts)
 			: node_impl(exp)
 			, _All_tasks(std::forward<_Tasks>(ts)...)
-			, _Result_count(std::tuple_size_v<_Ttuple>)
+			, _Result_count(std::tuple_size<_Ttuple>::value)
 		{
 		}
 		task_all_node(task_all_node && _Right) = default;

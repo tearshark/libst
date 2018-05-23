@@ -1,6 +1,12 @@
 //测试基本的任务链。每次then后返回一个新的task<node_first, node_last>对象
 
-#include "stdafx.h"
+#include <iostream>
+#include <string>
+
+#include "task.h"
+#include "task_context.h"
+
+using namespace std::literals;
 
 int fn_first(int val)
 {

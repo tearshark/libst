@@ -1,6 +1,11 @@
 //测试任务链内部数据在传递过程中，尽量采用了移动语义(move)，而不是拷贝语义
+#include <iostream>
+#include <string>
 
-#include "stdafx.h"
+#include "task.h"
+#include "task_context.h"
+
+using namespace std::literals;
 
 struct print_move
 {

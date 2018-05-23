@@ -1,7 +1,13 @@
 //测试将任务节点分配到指定的线程池环境里运行
 
-#include "stdafx.h"
+#include <iostream>
+#include <string>
+
+#include "task.h"
+#include "task_context.h"
 #include "threadpool_context.h"
+
+using namespace std::literals;
 
 void test_task_async()
 {

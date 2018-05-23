@@ -1,7 +1,13 @@
 //测试任务链将异常传递给future，在future::get()时获得任务链执行过程中的异常
 
-#include "stdafx.h"
+#include <iostream>
+#include <string>
+
+#include "task.h"
+#include "task_context.h"
 #include "threadpool_context.h"
+
+using namespace std::literals;
 
 void test_task_exception()
 {

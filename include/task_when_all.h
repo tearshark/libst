@@ -23,7 +23,7 @@ namespace lib_shark_task
 		template<class _Task>
 		int check_task_type()
 		{
-			static_assert(detail::is_task_v<_Task>, "use 'make_task' or 'marshal_task' to create a task");
+			static_assert(detail::is_task<_Task>::value, "use 'make_task' or 'marshal_task' to create a task");
 			return 0;
 		}
 
@@ -56,7 +56,7 @@ namespace lib_shark_task
 			when_all_one_impl<_Idx>(all_node, node_idx, tf);
 
 			using tuple_type = decltype(declval_task_last_node_result_tuple<_Task>());
-			when_all_impl2<_Idx + std::tuple_size_v<tuple_type>>(all_node, ++node_idx, std::forward<_TaskRest>(rest)...);
+			when_all_impl2<_Idx + std::tuple_size<tuple_type>::value>(all_node, ++node_idx, std::forward<_TaskRest>(rest)...);
 		}
 
 		template<class _Anode, class _Ttuple, size_t... Idx>
@@ -103,7 +103,7 @@ namespace lib_shark_task
 	template<class _Task, class... _TaskRest>
 	auto when_all(_Task& tfirst, _TaskRest&... rest)
 	{
-		static_assert(detail::is_task_v<_Task>, "use 'make_task' or 'marshal_task' to create a task");
+		static_assert(detail::is_task<_Task>::value, "use 'make_task' or 'marshal_task' to create a task");
 		(void)std::initializer_list<int>{detail::check_task_type<_TaskRest>()...};
 
 		using cated_task_t = std::tuple<std::remove_reference_t<_Task>, std::remove_reference_t<_TaskRest>...>;
@@ -115,7 +115,7 @@ namespace lib_shark_task
 		auto st_first = std::make_shared<first_node_type>(exp, std::move(tfirst), std::move(rest)...);
 		exp->_Impl = st_first.get();
 
-		detail::when_all_impl(st_first.get(), st_first->_All_tasks, std::make_index_sequence<std::tuple_size_v<cated_task_t>>{});
+		detail::when_all_impl(st_first.get(), st_first->_All_tasks, std::make_index_sequence<std::tuple_size<cated_task_t>::value>{});
 
 		return task<first_node_type, first_node_type>{exp, st_first, st_first};
 	}
@@ -128,12 +128,11 @@ namespace lib_shark_task
 	//		task_when_one 负责将结果放入到 task_allv_node的vector<>里，然后通知 task_allv_node 有一个任务完成
 	//		task_allv_node 在所有任务完成后，调用invoke_then_if
 	//
-	template<class _Iter, typename _Fty = std::enable_if_t<detail::is_task_v<decltype(*std::declval<_Iter>())>, decltype(*std::declval<_Iter>())>>
+	template<class _Iter, typename _Fty = std::enable_if_t<detail::is_task<decltype(*std::declval<_Iter>())>::value, decltype(*std::declval<_Iter>())>>
 	auto when_all(_Iter _First, _Iter _Last)
 	{
-		static_assert(detail::is_task_v<_Fty>, "_Iter must be a iterator of task container");
-
-		using task_type = std::remove_reference_t<_Fty>;
+		using task_type = typename std::remove_reference<_Fty>::type;
+		static_assert(detail::is_task<task_type>::value, "_Iter must be a iterator of task container");
 		using result_type = decltype(detail::declval_task_last_node_result_tuple<task_type>());
 
 		task_set_exception_agent_sptr exp;

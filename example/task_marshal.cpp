@@ -1,7 +1,12 @@
 //测试将回调接口的函数，包装成任务链节点
+#include <iostream>
+#include <string>
 
-#include "stdafx.h"
+#include "task.h"
+#include "task_context.h"
 #include "threadpool_context.h"
+
+using namespace std::literals;
 
 //foo_callback 需要满足以下要求：
 //一、返回值没有意义

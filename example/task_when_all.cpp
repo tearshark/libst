@@ -1,6 +1,11 @@
-#include "stdafx.h"
-#include "task_when_all.h"
+#include <iostream>
+#include <string>
 #include <list>
+
+#include "task.h"
+#include "task_when_all.h"
+
+using namespace std::literals;
 
 void test_task_when_all_1()
 {

@@ -8,16 +8,17 @@
 #pragma warning(disable : 4503)			//任务链很容易类型名过长，所以，禁止这个警告
 
 #include <assert.h>
+#include <tuple>
 #include <future>
 #include <functional>
 
 #include "task_utils.inl"
 #include "task_invoke_traits.h"
+#include "task_executor.inl"
 #include "task_detail.inl"
 #include "task_exception.inl"
 #include "task_node.inl"
 #include "task_cbnode.inl"
-#include "task_executor.inl"
 
 namespace lib_shark_task
 {
@@ -201,11 +202,11 @@ namespace lib_shark_task
 	namespace detail
 	{
 		template<class _Ty>
-		struct is_task : public std::false_type {};
+		struct is_task2 : public std::false_type {};
 		template<class _LastNode, class _FirstNode>
-		struct is_task<task<_LastNode, _FirstNode>> : public std::true_type {};
+		struct is_task2<task<_LastNode, _FirstNode>> : public std::true_type {};
 		template<class _Ty>
-		constexpr bool is_task_v = is_task<std::remove_reference_t<_Ty>>::value;
+		struct is_task : public is_task2<typename std::remove_reference<_Ty>::type> {};
 	}
 
 	template<size_t _N>
@@ -256,7 +257,7 @@ namespace lib_shark_task
 		using fun_type_rrt = std::remove_reference_t<_Ftype>;
 		using args_tuple_type = typename detail::invoke_traits<fun_type_rrt>::args_tuple_type;
 
-		return _Make_task_0_impl<std::tuple_size_v<args_tuple_type>>::make(std::forward<_Ftype>(fn));
+		return _Make_task_0_impl<std::tuple_size<args_tuple_type>::value>::make(std::forward<_Ftype>(fn));
 	}
 
 	//根据一个新的任务节点，生成一个全新的任务链
@@ -269,7 +270,7 @@ namespace lib_shark_task
 
 		using ret_type_rrt = std::remove_reference_t<ret_type>;
 
-		static_assert(sizeof...(_Args) == std::tuple_size_v<args_tuple_type>, "'args' count must equal argument count of 'fn'");
+		static_assert(sizeof...(_Args) == std::tuple_size<args_tuple_type>::value, "'args' count must equal argument count of 'fn'");
 
 		using first_node_type = task_node<ret_type_rrt>;
 
@@ -289,7 +290,7 @@ namespace lib_shark_task
 	{
 		using fun_type_rrt = std::remove_reference_t<_Fcb>;
 		using args_tuple_type = typename detail::invoke_traits<fun_type_rrt>::args_tuple_type;
-		static_assert(sizeof...(_Args) == std::tuple_size_v<args_tuple_type>, "'args' count must equal argument count of 'fn'");
+		static_assert(sizeof...(_Args) == std::tuple_size<args_tuple_type>::value, "'args' count must equal argument count of 'fn'");
 
 		using callback_type3 = detail::args_of_t<detail::get_holder_index<_Args...>::index, _Fcb>;
 		using callback_type2 = std::remove_cv_t<std::remove_reference_t<callback_type3>>;
