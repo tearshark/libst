@@ -15,6 +15,24 @@
 - 支持Android/iOS
 
 # 接口说明
+
+## make_task
+```C++
+	template<class _Ftype>
+	task<> make_task(_Ftype && fn);
+	构建任务链的首节点。
+	_Ftype是一个函数(对象)
+```
+
+## marshal_task
+```C++
+	template<class _Fcb, class... _Args>
+	task<> marshal_task(_Fcb&& fn, _Args&&... args)
+	构建任务链的首节点。
+	_Fcb是一个基于回调的函数(对象)。
+	_Fcb的返回值不再关心。并且_Fcb内部要么抛异常，要么就必须调用回调函数，并且不关心回调函数的返回值
+```
+
 ## task
 ```C++
 	template<class _FirstNode, class _LastNode>
@@ -81,23 +99,6 @@
 	
 	template<class... _Args> void operator()(_Args&&... args) const 
 	执行整个调用链。args...参数必须跟第一个链节点需要的参数匹配
-```
-
-## make_task
-```C++
-	template<class _Ftype>
-	task<> make_task(_Ftype && fn);
-	构建任务链的首节点。
-	_Ftype是一个函数(对象)
-```
-
-## marshal_task
-```C++
-	template<class _Fcb, class... _Args>
-	task<> marshal_task(_Fcb&& fn, _Args&&... args)
-	构建任务链的首节点。
-	_Fcb是一个基于回调的函数(对象)。
-	_Fcb的返回值不再关心。并且_Fcb内部要么抛异常，要么就必须调用回调函数，并且不关心回调函数的返回值
 ```
 
 ## task_node

@@ -6,7 +6,6 @@
 //要包装成
 //	tuple<args> foo2(...)
 #pragma once
-#include <functional>
 
 namespace lib_shark_task
 {

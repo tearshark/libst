@@ -66,10 +66,10 @@ namespace lib_shark_task
 		struct _Fill_to_tuple_selector<std::tuple<_Args...>>
 		{
 			using _Tuple = std::tuple<_Args...>;
-			template<size_t _Idx, class _Ty, class... _Rest>
-			static inline void _fill(_Tuple & t, _Ty && val, _Rest&&... args)
+			template<size_t _Idx, class... _Rest>
+			static inline void _fill(_Tuple & t, _Rest&&... args)
 			{
-				_Fill_to_tuple_impl<_Idx>(t, std::forward<_Ty>(val), std::forward<_Rest>(args)...);
+				_Fill_to_tuple_impl<_Idx>(t, std::forward<_Rest>(args)...);
 			}
 		};
 

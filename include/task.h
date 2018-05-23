@@ -9,6 +9,7 @@
 
 #include <assert.h>
 #include <future>
+#include <functional>
 
 #include "task_utils.inl"
 #include "task_invoke_traits.h"
@@ -97,7 +98,7 @@ namespace lib_shark_task
 			using args_tuple_type = detail::args_tuple_t<std::remove_reference_t<_Ftype>>;
 			using last_tuple_type = detail::package_tuple_t<last_type>;
 
-			static_assert(std::tuple_size<args_tuple_type>::value <= std::tuple_size<last_tuple_type>::value, "");
+			static_assert(std::tuple_size<args_tuple_type>::value <= std::tuple_size<last_tuple_type>::value, "parames of '_Ftype' is not match this task node(s).");
 
 			using next_node_type = detail::unpack_tuple_node_t<then_result, args_tuple_type/*last_type*/>;
 

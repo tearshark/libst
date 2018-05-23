@@ -14,10 +14,14 @@ void test_task_when_all_1()
 	auto t2 = make_task([]
 	{
 		std::cout << "second task." << std::endl;
+	});
+	auto t3 = make_task([]
+	{
+		std::cout << "second task." << std::endl;
 		return 2.0;
 	});
 
-	auto tall = when_all(t1, t2)
+	auto tall = when_all(t1, t2, t3)
 		.then([](int v1, std::string, double v2)
 		{
 			std::cout << "all completed." << std::endl;
