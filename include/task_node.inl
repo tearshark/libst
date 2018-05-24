@@ -1,8 +1,30 @@
 
 #pragma once
-#include "task_node_win32.inl"
-#include "task_node_android.inl"
-#include "task_node_ios.inl"
+
+#ifdef _WIN32
+	#include "task_node_win32.inl"
+#elif __APPLE__ 
+	#include "TargetConditionals.h" 
+	#if TARGET_IPHONE_SIMULATOR // iOS Simulator 
+		#include "task_node_ios.inl"
+	#elif TARGET_OS_IPHONE // iOS device 
+		#include "task_node_ios.inl"
+	#elif TARGET_OS_MAC // Other kinds of Mac OS 
+		#include "task_node_ios.inl"
+	#else 
+		#error "Unknown Apple platform" 
+	#endif 
+#elif __ANDROID__ // android 
+	#include "task_node_android.inl"
+#elif __linux__ // linux 
+	#include "task_node_linux.inl"
+#elif __unix__ // all unices not caught above // Unix 
+	#include "task_node_unix.inl"
+#elif defined(_POSIX_VERSION) // POSIX 
+	#include "task_node_posix.inl"
+#else 
+	#error "Unknown platform" 
+#endif 
 
 namespace lib_shark_task
 {
