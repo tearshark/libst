@@ -100,9 +100,11 @@ namespace lib_shark_task
 		using result_tuple = result_type;							//本节点的结果打包成tuple<>后的类型
 		using args_tuple_type = std::tuple<_PrevArgs...>;			//本节点的入参打包成tuple<>后的类型
 
+		using base_type = node_result_<detail::args_tuple_t<_Cbtype>>;
+
 		template<class _Fx, class... _Types>
 		task_cbnode(const task_set_exception_agent_sptr & exp, _Fx&& _Func, _Types&&... args)
-			: node_result_(exp)
+			: base_type(exp)
 			, _Thiz(std::bind(std::forward<_Fx>(_Func), std::forward<_Types>(args)...))
 		{
 		}
@@ -114,19 +116,19 @@ namespace lib_shark_task
 		template<class... _Types2>
 		void _Do_callback(_Types2&&... args)
 		{
-			_Set_value(std::make_tuple(std::forward<_Types2>(args)...));
-			_Ready = true;
+			this->_Set_value(std::make_tuple(std::forward<_Types2>(args)...));
+			this->_Ready = true;
 			invoke_then_if();
 		}
 	public:
 		template<class... _PrevArgs2>
 		bool invoke_thiz(_PrevArgs2&&... args)
 		{
-			static_assert(sizeof...(_PrevArgs2) >= typename std::tuple_size<args_tuple_type>::value, "");
+			static_assert(sizeof...(_PrevArgs2) >= std::tuple_size<args_tuple_type>::value, "");
 
 			try
 			{
-				task_function fn = _Move_thiz();
+				task_function fn = this->_Move_thiz();
 
 				detail::callback_relay<this_type, _Cbtype> cb;
 				cb._Assoc_node = std::static_pointer_cast<task_cbnode>(this->shared_from_this());
@@ -136,7 +138,7 @@ namespace lib_shark_task
 			}
 			catch (...)
 			{
-				_Set_Agent_exception(std::current_exception());
+				this->_Set_Agent_exception(std::current_exception());
 			}
 
 			return false;
@@ -145,11 +147,11 @@ namespace lib_shark_task
 		template<class _PrevTuple>
 		bool invoke_thiz_tuple(_PrevTuple&& args)
 		{
-			static_assert(typename std::tuple_size<_PrevTuple>::value >= typename std::tuple_size<args_tuple_type>::value, "");
+			static_assert(std::tuple_size<_PrevTuple>::value >= std::tuple_size<args_tuple_type>::value, "");
 
 			try
 			{
-				task_function fn = _Move_thiz();
+				task_function fn = this->_Move_thiz();
 
 				detail::callback_relay<this_type, _Cbtype> cb;
 				cb._Assoc_node = std::static_pointer_cast<task_cbnode>(this->shared_from_this());
@@ -159,7 +161,7 @@ namespace lib_shark_task
 			}
 			catch (...)
 			{
-				_Set_Agent_exception(std::current_exception());
+				this->_Set_Agent_exception(std::current_exception());
 			}
 
 			return false;
@@ -167,45 +169,45 @@ namespace lib_shark_task
 
 		void invoke_then_if()
 		{
-			if (!_Ready)
+			if (!this->_Ready)
 				return;
 
-			then_function fn = _Move_then();
+			then_function fn = this->_Move_then();
 			if (!fn)
 				return;
 
 			try
 			{
-				detail::_Apply_then(fn, std::move(_Get_value()));
+				detail::_Apply_then(fn, std::move(this->_Get_value()));
 				//detail::_Invoke_then(fn, std::move(_Get_value()));
 			}
 			catch (...)
 			{
-				_Set_Agent_exception(std::current_exception());
+				this->_Set_Agent_exception(std::current_exception());
 			}
 		}
 
 		template<class _Ftype>
 		void _Set_then_if(_Ftype && fn)
 		{
-			_Set_retrieved();
+			this->_Set_retrieved();
 
-			if (_Ready)
+			if (this->_Ready)
 			{
 				try
 				{
-					detail::_Apply_then2<then_function>(std::forward<_Ftype>(fn), std::move(_Get_value()));
+					detail::_Apply_then2<then_function>(std::forward<_Ftype>(fn), std::move(this->_Get_value()));
 					//detail::_Invoke_then(fn, std::move(_Get_value()));
 				}
 				catch (...)
 				{
-					_Set_Agent_exception(std::current_exception());
+					this->_Set_Agent_exception(std::current_exception());
 				}
 			}
 			else
 			{
-				std::unique_lock<std::mutex> _Lock(_Mtx());
-				_Then = then_function{ std::forward<_Ftype>(fn) };
+				std::unique_lock<std::mutex> _Lock(this->_Mtx());
+				this->_Then = then_function{ std::forward<_Ftype>(fn) };
 			}
 		}
 
@@ -220,13 +222,13 @@ namespace lib_shark_task
 												//取执行当前任务节点的函数，只能取一次。线程安全
 		inline task_function _Move_thiz()
 		{
-			std::unique_lock<std::mutex> _Lock(_Mtx());
+			std::unique_lock<std::mutex> _Lock(this->_Mtx());
 			return std::move(_Thiz);			//强迫只能调用一次
 		}
 		//取执行下一个任务节点的函数，只能取一次。线程安全
 		inline then_function _Move_then()
 		{
-			std::unique_lock<std::mutex> _Lock(_Mtx());
+			std::unique_lock<std::mutex> _Lock(this->_Mtx());
 			return std::move(_Then);			//强迫只能调用一次
 		}
 	};

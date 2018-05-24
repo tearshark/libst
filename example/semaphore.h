@@ -6,6 +6,9 @@
 #if defined(_WIN32)
 #include <windows.h>
 
+#elif defined(ANDROID)
+#include <semaphore.h>
+
 #elif defined(__MACH__)
 #include <mach/mach.h>
 
@@ -190,7 +193,7 @@ namespace std
 		}
 	};
 
-#elif defined(__unix__)
+#elif defined(__unix__) || defined(ANDROID)
 
 	//---------------------------------------------------------
 	// Semaphore (POSIX, Linux)
@@ -296,7 +299,7 @@ namespace std
 		}
 		void swap(semaphore & _Right)
 		{
-			semaphore_t* hSema = m_hSema;
+			sem_t hSema = m_hSema;
 			m_hSema = _Right.m_hSema;
 			_Right.m_hSema = hSema;
 		}

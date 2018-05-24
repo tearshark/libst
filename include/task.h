@@ -58,8 +58,7 @@ namespace lib_shark_task
 		void operator()(_Args&&... args) const
 		{
 			if (_Node == nullptr)
-				std::_Throw_future_error(
-					std::make_error_code(std::future_errc::no_state));
+				throw std::future_error(std::make_error_code(std::future_errc::no_state));
 
 			if (!_Node->is_ready())
 			{
@@ -82,8 +81,7 @@ namespace lib_shark_task
 		inline auto get_executor()
 		{
 			if (_Node == nullptr)
-				std::_Throw_future_error(
-					std::make_error_code(std::future_errc::no_state));
+				throw std::future_error(std::make_error_code(std::future_errc::no_state));
 
 			return std::make_shared<task_executor<node_type>>(std::move(_Node));
 		}
@@ -209,7 +207,7 @@ namespace lib_shark_task
 		struct is_task : public is_task2<typename std::remove_reference<_Ty>::type> {};
 	}
 
-	template<size_t _N>
+	template<size_t _ArgSize>
 	struct _Make_task_0_impl
 	{
 		template<class _Ftype>

@@ -103,5 +103,14 @@
     <None Include="..\include\task_when_allv.inl">
       <Filter>libst</Filter>
     </None>
+    <None Include="..\include\task_node_win32.inl">
+      <Filter>libst</Filter>
+    </None>
+    <None Include="..\include\task_node_android.inl">
+      <Filter>libst</Filter>
+    </None>
+    <None Include="..\include\task_node_ios.inl">
+      <Filter>libst</Filter>
+    </None>
   </ItemGroup>
 </Project>
