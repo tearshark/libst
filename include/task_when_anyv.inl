@@ -3,60 +3,65 @@
 
 namespace lib_shark_task
 {
-	template<class _Ttype, class _ResultArgs>
-	struct task_allv_node : public node_impl<std::vector<_ResultArgs>, std::function<void()>, std::function<void(std::vector<_ResultArgs>)>>
+	template<class _Ttype, class... _ResultArgs>
+	struct task_anyv_node : public node_impl<std::tuple<size_t, _ResultArgs...>, std::function<void()>, std::function<void(size_t, _ResultArgs...)>>
 	{
-		using this_type = task_allv_node<_Ttype, _ResultArgs>;
+		using this_type = task_anyv_node<_Ttype, _ResultArgs...>;
 
-		using element_type = _ResultArgs;
-		using result_type = std::vector<_ResultArgs>;				//本节点的结果的类型
-		using result_tuple = std::tuple<result_type>;				//本节点的结果打包成tuple<>后的类型
+		using element_type = std::tuple<size_t, _ResultArgs...>;
+		using result_type = std::tuple<size_t, _ResultArgs...>;		//本节点的结果的类型
+		using result_tuple = result_type;							//本节点的结果打包成tuple<>后的类型
 		using args_tuple_type = std::tuple<>;						//本节点的入参打包成tuple<>后的类型
 
 		using task_vector = std::vector<_Ttype>;
 		task_vector			_All_tasks;
 
 		template<class _Iter>
-		task_allv_node(const task_set_exception_agent_sptr & exp, _Iter _First, _Iter _Last)
+		task_anyv_node(const task_set_exception_agent_sptr & exp, _Iter _First, _Iter _Last)
 			: node_impl(exp)
 		{
 			_All_tasks.reserve(std::distance(_First, _Last));
 			for (; _First != _Last; ++_First)
 				_All_tasks.emplace_back(std::move(*_First));
-			
-			_Result_count = _All_tasks.size();
-			_Peek_value().resize(_Result_count);
 		}
-		task_allv_node(task_allv_node && _Right) = default;
-		task_allv_node & operator = (task_allv_node && _Right) = default;
-		task_allv_node(const task_allv_node & _Right) = delete;
-		task_allv_node & operator = (const task_allv_node & _Right) = delete;
+		task_anyv_node(task_anyv_node && _Right) = default;
+		task_anyv_node & operator = (task_anyv_node && _Right) = default;
+		task_anyv_node(const task_anyv_node & _Right) = delete;
+		task_anyv_node & operator = (const task_anyv_node & _Right) = delete;
 
 	private:
-		std::atomic<intptr_t> _Result_count;
+		std::atomic<bool> _Result_retrieved{ false };
 	public:
 		template<size_t _Idx, class... _PrevArgs2>
 		void _Set_value_partial(size_t idx, _PrevArgs2&&... args)
 		{
-			assert(idx < _Peek_value().size());
-
 			std::unique_lock<std::mutex> _Lock(_Mtx());
-			detail::_Fill_to_tuple<_Idx>(_Peek_value()[idx], std::forward<_PrevArgs2>(args)...);
+			if (!_Result_retrieved)
+			{
+				_Result_retrieved = true;
+				detail::_Fill_to_tuple<0>(_Peek_value(), idx, std::forward<_PrevArgs2>(args)...);
+			}
 		}
 		template<size_t _Idx, class _PrevTuple>
 		void _Set_value_partial_t(size_t idx, _PrevTuple&& args)
 		{
-			assert(idx < _Peek_value().size());
-
 			std::unique_lock<std::mutex> _Lock(_Mtx());
-			_Peek_value()[idx] = std::forward<_PrevTuple>(args);
-			//detail::_Move_to_tuple<_Idx>(_Peek_value()[idx], std::forward<_PrevTuple>(args));
+			if (!_Result_retrieved)
+			{
+				_Result_retrieved = true;
+				std::get<0>(_Peek_value()) = idx;
+				detail::_Move_to_tuple<1>(_Peek_value(), std::forward<_PrevTuple>(args));
+			}
 		}
 
-		void _On_result(size_t)
+		void _On_result(size_t idx)
 		{
-			if (--_Result_count == 0)
+			std::unique_lock<std::mutex> _Lock(_Mtx());
+
+			if (_Result_retrieved && idx == std::get<0>(_Peek_value()))
 			{
+				_Lock.unlock();
+
 				_Ptr()->_Set_value(false);
 				_Ready = true;
 				invoke_then_if();
@@ -170,9 +175,9 @@ namespace lib_shark_task
 		}
 	};
 	template<class _Ttuple, class... _ResultArgs>
-	struct task_allv_node<_Ttuple, std::tuple<_ResultArgs...>> : public task_allv_node<_Ttuple, _ResultArgs...>
+	struct task_anyv_node<_Ttuple, std::tuple<_ResultArgs...>> : public task_anyv_node<_Ttuple, _ResultArgs...>
 	{
-		using task_allv_node<_Ttuple, _ResultArgs...>::task_allv_node;
+		using task_anyv_node<_Ttuple, _ResultArgs...>::task_anyv_node;
 	};
 
 }

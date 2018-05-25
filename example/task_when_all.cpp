@@ -42,7 +42,7 @@ void test_task_when_all_1()
 	std::cout << "end value is " << val << std::endl;
 }
 
-auto create_task_foo(int val)
+static auto create_task_foo(int val)
 {
 	return st::make_task([=]
 	{

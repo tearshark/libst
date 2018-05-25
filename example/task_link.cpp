@@ -32,10 +32,10 @@ void test_task_link()
 {
 	using namespace st;
 
-	task<task_node<int>, task_node<int>> t1 = make_task(fn_first, 3);
-	task<task_node<std::string, int>, task_node<int>> t2 = t1.then(fn_second);
-	task<task_node<std::tuple<int, std::string>, std::string>, task_node<int>> t3 = t2.then(imm_context, fn_third);
-	task<task_node<void, int, std::string>, task_node<int>> t4 = t3.then(imm_context, fn_four);
+	task<task_node<int, int>, task_node<int, int>> t1 = make_task(std::bind(fn_first, 3));
+	task<task_node<std::string, int>, task_node<int, int>> t2 = t1.then(fn_second);
+	task<task_node<std::tuple<int, std::string>, std::string>, task_node<int, int>> t3 = t2.then(imm_context, fn_third);
+	task<task_node<void, int, std::string>, task_node<int, int>> t4 = t3.then(imm_context, fn_four);
 
 	auto t = t4.then([]
 	{

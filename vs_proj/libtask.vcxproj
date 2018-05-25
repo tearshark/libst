@@ -90,7 +90,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>./;../include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;../;../include</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4503</DisableSpecificWarnings>
     </ClCompile>
     <Link>
@@ -106,7 +106,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>./;../include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;../;../include</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4503</DisableSpecificWarnings>
     </ClCompile>
     <Link>
@@ -124,7 +124,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>./;../include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;../;../include</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4503</DisableSpecificWarnings>
     </ClCompile>
     <Link>
@@ -144,7 +144,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>./;../include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;../;../include</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4503</DisableSpecificWarnings>
     </ClCompile>
     <Link>
@@ -161,6 +161,8 @@
     <ClInclude Include="..\include\task_context.h" />
     <ClInclude Include="..\include\task_invoke_traits.h" />
     <ClInclude Include="..\include\task_when_all.h" />
+    <ClInclude Include="..\include\task_when_any.h" />
+    <ClInclude Include="..\libtask.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
@@ -187,6 +189,8 @@
     <None Include="..\include\task_utils.inl" />
     <None Include="..\include\task_when_all.inl" />
     <None Include="..\include\task_when_allv.inl" />
+    <None Include="..\include\task_when_any.inl" />
+    <None Include="..\include\task_when_anyv.inl" />
     <None Include="..\include\task_when_node.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -6,7 +6,7 @@ namespace lib_shark_task
 	template<class _Ttuple, class... _ResultArgs>
 	struct task_all_node : public node_impl<std::tuple<_ResultArgs...>, std::function<void()>, std::function<void(_ResultArgs...)>>
 	{
-		using this_type = task_all_node<_Ttuple, _ResultArgs...>;
+		using this_type = task_when_one<_Ttuple, _ResultArgs...>;
 
 		using result_type = std::tuple<_ResultArgs...>;		//本节点的结果的类型
 		using result_tuple = result_type;					//本节点的结果打包成tuple<>后的类型

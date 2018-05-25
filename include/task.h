@@ -14,8 +14,8 @@
 
 #include "task_utils.inl"
 #include "task_invoke_traits.h"
-#include "task_executor.inl"
 #include "task_detail.inl"
+#include "task_executor.inl"
 #include "task_exception.inl"
 #include "task_node.inl"
 #include "task_cbnode.inl"
@@ -34,21 +34,40 @@ namespace lib_shark_task
 		using last_node = _LastNode;
 		using last_type = typename last_node::result_type;
 	private:
-		task_set_exception_agent_sptr		_Exception;			//传递异常的代理接口
+		node_type_sptr						_Node;				//第一个任务节点。其后的then/marshal，这个节点是不变化的
 		std::shared_ptr<last_node>			_Last;				//最后一个任务节点。每次then/marshal后，新的task的这个类型和值发生变化
-		mutable node_type_sptr				_Node;				//第一个任务节点。其后的then/marshal，这个节点是不变化的
+		task_set_exception_agent_sptr		_Exception;			//传递异常的代理接口
+		mutable std::atomic<bool>			_Node_executed;		//_Node是否已经执行过了
 	public:
 		task(const task_set_exception_agent_sptr & exp, const std::shared_ptr<last_node> & last, const std::shared_ptr<node_type> & first)
 			: _Node(first)
 			, _Last(last)
 			, _Exception(exp)
+			, _Node_executed(false)
 		{
 			assert(_Node != nullptr);
 			assert(_Last != nullptr);
 		}
 
-		task(task && st) = default;
-		task & operator = (task && st) = default;
+		task(task && _Right)
+			: _Node(std::move(_Right._Node))
+			, _Last(std::move(_Right._Last))
+			, _Exception(std::move(_Right._Exception))
+			, _Node_executed(_Right._Node_executed.load())
+		{
+		}
+
+		task & operator = (task && _Right)
+		{
+			if (this != &_Right)
+			{
+				_Node = std::move(_Right._Node);
+				_Last = std::move(_Right._Last);
+				_Exception = std::move(_Right._Exception);
+				_Node_executed = _Right._Node_executed.load();
+			}
+			return *this;
+		}
 		task(const task & st) = delete;
 		task & operator = (const task & st) = delete;
 
@@ -57,16 +76,12 @@ namespace lib_shark_task
 		template<class... _Args>
 		void operator()(_Args&&... args) const
 		{
-			if (_Node == nullptr)
-				throw std::future_error(std::make_error_code(std::future_errc::no_state));
+			if (_Node_executed)
+				throw std::future_error(std::make_error_code(std::future_errc::promise_already_satisfied));
 
-			if (!_Node->is_ready())
-			{
-				if (_Node->invoke_thiz(std::forward<_Args>(args)...))
-					_Node->invoke_then_if();
-
-				_Node = nullptr;
-			}
+			_Node_executed = true;
+			if (_Node->invoke_thiz(std::forward<_Args>(args)...))
+				_Node->invoke_then_if();
 		}
 
 		//获取最后一个任务节点，对应的future。
@@ -80,9 +95,10 @@ namespace lib_shark_task
 		//获取完毕后，自身不能再调用operator()了----毕竟是run_once语义
 		inline auto get_executor()
 		{
-			if (_Node == nullptr)
-				throw std::future_error(std::make_error_code(std::future_errc::no_state));
+			if (_Node_executed)
+				throw std::future_error(std::make_error_code(std::future_errc::promise_already_satisfied));
 
+			_Node_executed = true;
 			return std::make_shared<task_executor<node_type>>(std::move(_Node));
 		}
 
@@ -249,6 +265,7 @@ namespace lib_shark_task
 	};
 
 	//根据一个新的任务节点，生成一个全新的任务链
+	//根据一个新的任务节点，生成一个全新的任务链
 	template<class _Ftype>
 	inline auto make_task(_Ftype && fn)
 	{
@@ -257,30 +274,14 @@ namespace lib_shark_task
 
 		return _Make_task_0_impl<std::tuple_size<args_tuple_type>::value>::make(std::forward<_Ftype>(fn));
 	}
-
-	//根据一个新的任务节点，生成一个全新的任务链
-	template<class _Ftype, class... _Args>
-	inline auto make_task(_Ftype && fn, _Args&&... args)
+	inline auto make_task()
 	{
-		using fun_type_rrt = std::remove_reference_t<_Ftype>;
-		using ret_type = detail::result_of_t<fun_type_rrt>;
-		using args_tuple_type = typename detail::invoke_traits<fun_type_rrt>::args_tuple_type;
-
-		using ret_type_rrt = std::remove_reference_t<ret_type>;
-
-		static_assert(sizeof...(_Args) == std::tuple_size<args_tuple_type>::value, "'args' count must equal argument count of 'fn'");
-
-		using first_node_type = task_node<ret_type_rrt>;
-
-		task_set_exception_agent_sptr exp = std::make_shared<task_set_exception_agent>();
-		auto st_next = std::make_shared<first_node_type>(
-			[fn = std::forward<_Ftype>(fn), args = std::make_tuple(std::forward<_Args>(args)...)]()
-			{
-				return std::apply(fn, args);
-			}, exp);
-		exp->_Impl = st_next.get();
-
-		return task<first_node_type, first_node_type>{exp, st_next, st_next};
+		return make_task(detail::dummy_method_{});
+	}
+	template<class _Context, class _Ftype>
+	inline auto make_task(_Context & ctx, _Ftype && fn)
+	{
+		return make_task().then(ctx, std::forward<_Ftype>(fn));
 	}
 
 	template<class _Fcb, class... _Args>
@@ -302,6 +303,14 @@ namespace lib_shark_task
 
 		return task<first_node_type, first_node_type>{exp, st_next, st_next};
 	}
+/*
+	template<class _Context, class _Fcb, class... _Args>
+	inline auto marshal_task(_Context & ctx, _Fcb&& fn, _Args&&... args)
+		-> decltype(ctx.add(std::declval<executor_sptr>()), make_task(detail::dummy_method_{}).marshal(ctx, std::forward<_Ftype>(fn), std::forward<_Args>(args)...))
+	{
+		return make_task(detail::dummy_method_{}).marshal(ctx, std::forward<_Ftype>(fn), std::forward<_Args>(args)...);
+	}
+*/
 }
 
 #if !LIBST_DISABLE_SHORT_NS

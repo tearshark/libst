@@ -42,6 +42,12 @@
     <ClInclude Include="..\include\task_when_all.h">
       <Filter>libst</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\task_when_any.h">
+      <Filter>libst</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libtask.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="libtask.cpp">
@@ -110,6 +116,12 @@
       <Filter>libst</Filter>
     </None>
     <None Include="..\include\task_node_ios.inl">
+      <Filter>libst</Filter>
+    </None>
+    <None Include="..\include\task_when_any.inl">
+      <Filter>libst</Filter>
+    </None>
+    <None Include="..\include\task_when_anyv.inl">
       <Filter>libst</Filter>
     </None>
   </ItemGroup>

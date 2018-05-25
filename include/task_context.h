@@ -17,10 +17,14 @@ namespace lib_shark_task
 		inline void add(const executor_sptr & runner) const
 		{
 			assert(runner != nullptr);
-			std::async(std::launch::async, [=] 
+			std::thread async_run
 			{
-				runner->run_once();
-			});
+				[=]
+				{
+					runner->run_once();
+				}
+			};
+			async_run.detach();
 		}
 	};
 	extern async_task_context async_context;

@@ -2,6 +2,29 @@
 
 namespace lib_shark_task
 {
+	namespace detail
+	{
+		template<class _Task>
+		decltype(auto) declval_task_last_node()
+		{
+			using task_type = std::decay_t<_Task>;
+			return std::declval<typename task_type::last_node>();
+		}
+		template<class _Task>
+		auto declval_task_last_node_result_tuple()
+		{
+			using task_type = std::decay_t<_Task>;
+			using node_type = typename task_type::last_node;
+			return std::declval<typename node_type::result_tuple>();
+		}
+		template<class _Task>
+		int check_task_type()
+		{
+			static_assert(detail::is_task<_Task>::value, "use 'make_task' or 'marshal_task' to create a task");
+			return 0;
+		}
+	}
+
 	template<class _Anode, class _Ctuple, size_t _Idx>
 	struct when_node_args
 	{
@@ -94,4 +117,51 @@ namespace lib_shark_task
 	{
 		using task_when_one<_Ndone, _PrevArgs...>::task_when_one;
 	};
+
+	namespace detail
+	{
+		template<class _Anode, class _Task>
+		auto when_iter_one_impl(_Anode * all_node, size_t node_idx, _Task & tf)
+		{
+			using tuple_type = decltype(declval_task_last_node_result_tuple<_Task>());
+
+			using task_type = std::remove_reference_t<_Task>;
+			using element_type = typename _Anode::element_type;
+			using node_args_type = when_node_args<_Anode, element_type, 0>;
+
+			using next_node_type = task_when_one<node_args_type, tuple_type>;
+
+			task_set_exception_agent_sptr exp = tf._Get_exception_agent();
+			exp->_Impl = all_node;
+
+			auto st_next = std::make_shared<next_node_type>(exp, all_node, node_idx);
+			return tf.template _Then_node<next_node_type>(st_next);
+		}
+
+		template<class _Anode, class _Cont>
+		void when_iter_impl(_Anode * all_node, _Cont & c)
+		{
+			size_t idx = 0;
+			for (auto & t : c)
+				when_iter_one_impl(all_node, idx++, t);
+		}
+
+		template<class _Node, class _Iter>
+		auto when_iter(_Iter _First, _Iter _Last)
+		{
+			task_set_exception_agent_sptr exp;
+			if (_First != _Last)
+				exp = _First->_Get_exception_agent();
+			else
+				exp = std::make_shared<task_set_exception_agent>();
+
+			using first_node_type = _Node;
+			auto st_first = std::make_shared<first_node_type>(exp, _First, _Last);
+			exp->_Impl = st_first.get();
+
+			when_iter_impl(st_first.get(), st_first->_All_tasks);
+
+			return task<first_node_type, first_node_type>{exp, st_first, st_first};
+		}
+	}
 }

@@ -64,6 +64,7 @@ namespace lib_shark_task
 		{
 		};
 
+
 		//成员函数，普通版本
 		template<class _Ret, class _Ctype, class... _Args>
 		struct invoke_traits<_Ret(_Ctype::*)(_Args...)> : public native_invoke_traits<_Ret, _Args...>
@@ -157,6 +158,51 @@ namespace lib_shark_task
 			{
 				return base_type::template Invoke_(&_Tobj::operator(), obj, std::forward<_Rest>(args)...);
 			}
+		};
+
+
+		//std::bind()
+		template<class _Ret, class _Fx, class... _Types>
+		struct invoke_traits<std::_Binder<_Ret, _Fx, _Types...> >
+		{
+			using bind_type = std::_Binder<_Ret, _Fx, _Types...>;
+
+			using result_type = typename bind_type::result_type;
+			using type = result_type(_Types...);
+			using args_tuple_type = std::tuple<_Types...>;		//将函数参作包装成tuple的类型
+			using std_function_type = std::function<type>;		//对应的std::function<>类
+
+			using funptr_type = std::false_type;				//不是函数指针
+			using memfun_type = std::false_type;				//不是成员函数
+			using functor_type = std::true_type;				//是仿函数
+
+			using callee_type = bind_type;
+			using this_args_type = bind_type;
+
+			enum { args_size = sizeof...(_Types) };				//函数参数个数
+			
+			//通过指定的索引获取函数参数的类型
+			template<size_t _Idx>
+			struct args_element
+			{
+				static_assert(_Idx < args_size, "index is out of range, index must less than sizeof _Args");
+				using type = typename std::tuple_element<_Idx, args_tuple_type>::type;
+			};
+
+			//调用此类函数的辅助方法
+			template<class _Fx, class... _Rest>
+			static inline  decltype(auto) Invoke_(const _Fx & f, _Types&&... args, _Rest...)
+			{
+				return f(std::forward<_Types>(args)...);
+			}
+		};
+		template<class _Ret, class _Fx, class... _Types>
+		struct invoke_traits<std::_Binder<_Ret, _Fx, _Types...> &> : public invoke_traits<_Fx>
+		{
+		};
+		template<class _Ret, class _Fx, class... _Types>
+		struct invoke_traits<std::_Binder<_Ret, _Fx, _Types...> &&> : public invoke_traits<_Fx>
+		{
 		};
 	}
 	

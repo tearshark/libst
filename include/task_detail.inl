@@ -9,6 +9,12 @@ namespace lib_shark_task
 
 	namespace detail
 	{
+		struct dummy_method_
+		{
+			void operator()()const
+			{}
+		};
+
 		template<class _Fx>
 		using result_of_t = typename invoke_traits<_Fx>::result_type;			//萃取函数(对象)_Fx的返回值
 		template<class _Fx>
@@ -299,36 +305,6 @@ namespace lib_shark_task
 			using function_type = std::remove_reference_t<_Fx>;
 			return _Apply_function<function_type>::template _Apply(std::forward<_Fx2>(f), std::forward<_PrevArgs2>(args)...);
 		}
-
-
-		template<class _Stype>
-		struct _Set_then_helper
-		{
-			std::shared_ptr<_Stype> _Next;
-
-			template<class... _Args>
-			auto operator ()(_Args&&... args) const
-			{
-				if (_Next->invoke_thiz(std::forward<_Args>(args)...))
-					_Next->invoke_then_if();
-			}
-		};
-
-		template<class _Context, class _Stype>
-		struct _Set_then_ctx_helper
-		{
-			_Context * _Ctx;
-			std::shared_ptr<_Stype> _Next;
-
-			template<class... _Args>
-			auto operator ()(_Args&&... args) const
-			{
-				using executor_type = task_executor<_Stype>;
-				auto exe = std::make_shared<executor_type>(_Next, std::forward<_Args>(args)...);
-
-				_Ctx->add(exe);
-			}
-		};
 
 		template<class _Tuple>
 		struct package_tuple
