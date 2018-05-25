@@ -47,7 +47,7 @@ namespace lib_shark_task
 		{
 			if (--_Result_count == 0)
 			{
-				_Ptr()->_Set_value(false);
+				this->_Set_value();
 				_Ready = true;
 				invoke_then_if();
 			}

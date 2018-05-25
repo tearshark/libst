@@ -2,7 +2,7 @@
 
 #include <stack>
 #include <vector>
-#include "semaphore.h"
+#include "task_semaphore.h"
 
 struct threadpool_context
 {

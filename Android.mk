@@ -4,7 +4,7 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE := lib_shark_task_static
 LOCAL_MODULE_FILENAME := lib_shark_task
-LOCAL_SRC_FILES := libs/Android/$(TARGET_ARCH_ABI)/libvfxbase.a
-LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/include
+LOCAL_SRC_FILES := libs/Android/$(TARGET_ARCH_ABI)/lib_shark_task.a
+LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)
 
 include $(PREBUILT_STATIC_LIBRARY)

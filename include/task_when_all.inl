@@ -6,6 +6,7 @@ namespace lib_shark_task
 	template<class _Ttuple, class... _ResultArgs>
 	struct task_all_node : public node_impl<std::tuple<_ResultArgs...>, std::function<void()>, std::function<void(_ResultArgs...)>>
 	{
+		using base_type = node_impl<std::tuple<_ResultArgs...>, std::function<void()>, std::function<void(_ResultArgs...)>>;
 		using this_type = task_all_node<_Ttuple, _ResultArgs...>;
 
 		using result_type = std::tuple<_ResultArgs...>;		//本节点的结果的类型
@@ -17,7 +18,7 @@ namespace lib_shark_task
 
 		template<class... _Tasks>
 		task_all_node(const task_set_exception_agent_sptr & exp, _Tasks&&... ts)
-			: node_impl(exp)
+			: base_type(exp)
 			, _All_tasks(std::forward<_Tasks>(ts)...)
 			, _Result_count(std::tuple_size<_Ttuple>::value)
 		{
@@ -33,34 +34,34 @@ namespace lib_shark_task
 		template<size_t _Idx, class... _PrevArgs2>
 		void _Set_value_partial(size_t, _PrevArgs2&&... args)
 		{
-			std::unique_lock<std::mutex> _Lock(_Mtx());
-			detail::_Fill_to_tuple<_Idx>(_Peek_value(), std::forward<_PrevArgs2>(args)...);
+			std::unique_lock<std::mutex> _Lock(this->_Mtx());
+			detail::_Fill_to_tuple<_Idx>(this->_Peek_value(), std::forward<_PrevArgs2>(args)...);
 		}
 		template<size_t _Idx, class _PrevTuple>
 		void _Set_value_partial_t(size_t, _PrevTuple&& args)
 		{
-			std::unique_lock<std::mutex> _Lock(_Mtx());
-			detail::_Move_to_tuple<_Idx>(_Peek_value(), std::forward<_PrevTuple>(args));
+			std::unique_lock<std::mutex> _Lock(this->_Mtx());
+			detail::_Move_to_tuple<_Idx>(this->_Peek_value(), std::forward<_PrevTuple>(args));
 		}
 
 		void _On_result(size_t)
 		{
 			if (--_Result_count == 0)
 			{
-				_Ptr()->_Set_value(false);
-				_Ready = true;
-				invoke_then_if();
+				this->_Set_value();
+				this->_Ready = true;
+				this->invoke_then_if();
 			}
 		}
 
 		template<class... Args2>
 		bool invoke_thiz(Args2&&... args)
 		{
-			static_assert(sizeof...(Args2) >= typename std::tuple_size<args_tuple_type>::value, "");
+			static_assert(sizeof...(Args2) >= std::tuple_size<args_tuple_type>::value, "");
 
 			try
 			{
-				std::unique_lock<std::mutex> _Lock(_Mtx());
+				std::unique_lock<std::mutex> _Lock(this->_Mtx());
 				task_tuple all_task = std::move(_All_tasks);
 				_Lock.unlock();
 
@@ -71,7 +72,7 @@ namespace lib_shark_task
 			}
 			catch (...)
 			{
-				_Set_Agent_exception(std::current_exception());
+				this->_Set_Agent_exception(std::current_exception());
 			}
 
 			return false;
@@ -80,11 +81,11 @@ namespace lib_shark_task
 		template<class _PrevTuple>
 		bool invoke_thiz_tuple(_PrevTuple&& args)
 		{
-			static_assert(typename std::tuple_size<_PrevTuple>::value >= typename std::tuple_size<args_tuple_type>::value, "");
+			static_assert(std::tuple_size<_PrevTuple>::value >= std::tuple_size<args_tuple_type>::value, "");
 
 			try
 			{
-				std::unique_lock<std::mutex> _Lock(_Mtx());
+				std::unique_lock<std::mutex> _Lock(this->_Mtx());
 				task_tuple all_task = std::move(_All_tasks);
 				_Lock.unlock();
 
@@ -95,7 +96,7 @@ namespace lib_shark_task
 			}
 			catch (...)
 			{
-				_Set_Agent_exception(std::current_exception());
+				this->_Set_Agent_exception(std::current_exception());
 			}
 
 			return false;

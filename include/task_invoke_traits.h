@@ -179,7 +179,56 @@ namespace lib_shark_task
 #error "Unknown Apple platform" 
 #endif 
 #elif __ANDROID__ // android 
-#error "Unknown platform" 
+		template<class _Rp, class _Fp, class ..._BoundArgs>
+		using binder_type = std::__bind_r<_Rp, _Fp, _BoundArgs...>;
+
+		template<class _Fp, class ..._BoundArgs>
+		using binder2_type = std::__bind<_Fp, _BoundArgs...>;
+
+		//std::bind()
+		template<class _Fx, class... _Types>
+		struct invoke_traits<binder2_type<_Fx, _Types...> >
+		{
+			using bind_type = binder2_type<_Fx, _Types...>;
+
+			using result_type = typename bind_type::result_type;
+			using type = result_type(_Types...);
+			using args_tuple_type = std::tuple<_Types...>;		//将函数参作包装成tuple的类型
+			using std_function_type = std::function<type>;		//对应的std::function<>类
+
+			using funptr_type = std::false_type;				//不是函数指针
+			using memfun_type = std::false_type;				//不是成员函数
+			using functor_type = std::true_type;				//是仿函数
+
+			using callee_type = bind_type;
+			using this_args_type = bind_type;
+
+			enum { args_size = sizeof...(_Types) };				//函数参数个数
+
+																//通过指定的索引获取函数参数的类型
+			template<size_t _Idx>
+			struct args_element
+			{
+				static_assert(_Idx < args_size, "index is out of range, index must less than sizeof _Args");
+				using type = typename std::tuple_element<_Idx, args_tuple_type>::type;
+			};
+
+			//调用此类函数的辅助方法
+			template<class _Fx2, class... _Rest>
+			static inline  decltype(auto) Invoke_(const _Fx2 & f, _Types&&... args, _Rest...)
+			{
+				return f(std::forward<_Types>(args)...);
+			}
+		};
+		template<class _Fx, class... _Types>
+		struct invoke_traits<binder2_type<_Fx, _Types...> &> : public invoke_traits<binder2_type<_Fx, _Types...> >
+		{
+		};
+		template<class _Fx, class... _Types>
+		struct invoke_traits<binder2_type<_Fx, _Types...> &&> : public invoke_traits<binder2_type<_Fx, _Types...> >
+		{
+		};
+
 #elif __linux__ // linux 
 #error "Unknown platform" 
 #elif __unix__ // all unices not caught above // Unix 
@@ -219,18 +268,18 @@ namespace lib_shark_task
 			};
 
 			//调用此类函数的辅助方法
-			template<class _Fx, class... _Rest>
-			static inline  decltype(auto) Invoke_(const _Fx & f, _Types&&... args, _Rest...)
+			template<class _Fx2, class... _Rest>
+			static inline  decltype(auto) Invoke_(const _Fx2 & f, _Types&&... args, _Rest...)
 			{
 				return f(std::forward<_Types>(args)...);
 			}
 		};
 		template<class _Ret, class _Fx, class... _Types>
-		struct invoke_traits<binder_type<_Ret, _Fx, _Types...> &> : public invoke_traits<_Fx>
+		struct invoke_traits<binder_type<_Ret, _Fx, _Types...> &> : public invoke_traits<binder_type<_Ret, _Fx, _Types...> >
 		{
 		};
 		template<class _Ret, class _Fx, class... _Types>
-		struct invoke_traits<binder_type<_Ret, _Fx, _Types...> &&> : public invoke_traits<_Fx>
+		struct invoke_traits<binder_type<_Ret, _Fx, _Types...> &&> : public invoke_traits<binder_type<_Ret, _Fx, _Types...> >
 		{
 		};
 	}

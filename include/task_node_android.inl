@@ -159,6 +159,10 @@ namespace lib_shark_task
 		{
 			_State->set_value(std::forward<_Ty2>(val));
 		}
+		inline void _Set_value()
+		{
+			_State->__assoc_sub_state::set_value();
+		}
 		//…Ë÷√“Ï≥£
 		inline void _Set_Agent_exception(std::exception_ptr && val)
 		{

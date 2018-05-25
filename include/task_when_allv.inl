@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 #include "task_when_node.inl"
 
 namespace lib_shark_task
@@ -6,6 +7,7 @@ namespace lib_shark_task
 	template<class _Ttype, class _ResultArgs>
 	struct task_allv_node : public node_impl<std::vector<_ResultArgs>, std::function<void()>, std::function<void(std::vector<_ResultArgs>)>>
 	{
+		using base_type = node_impl<std::vector<_ResultArgs>, std::function<void()>, std::function<void(std::vector<_ResultArgs>)>>;
 		using this_type = task_allv_node<_Ttype, _ResultArgs>;
 
 		using element_type = _ResultArgs;
@@ -18,14 +20,14 @@ namespace lib_shark_task
 
 		template<class _Iter>
 		task_allv_node(const task_set_exception_agent_sptr & exp, _Iter _First, _Iter _Last)
-			: node_impl(exp)
+			: base_type(exp)
 		{
 			_All_tasks.reserve(std::distance(_First, _Last));
 			for (; _First != _Last; ++_First)
 				_All_tasks.emplace_back(std::move(*_First));
 			
 			_Result_count = _All_tasks.size();
-			_Peek_value().resize(_Result_count);
+			this->_Peek_value().resize(_Result_count);
 		}
 		task_allv_node(task_allv_node && _Right) = default;
 		task_allv_node & operator = (task_allv_node && _Right) = default;
@@ -38,39 +40,38 @@ namespace lib_shark_task
 		template<size_t _Idx, class... _PrevArgs2>
 		void _Set_value_partial(size_t idx, _PrevArgs2&&... args)
 		{
-			assert(idx < _Peek_value().size());
+			assert(idx < this->_Peek_value().size());
 
-			std::unique_lock<std::mutex> _Lock(_Mtx());
-			detail::_Fill_to_tuple<_Idx>(_Peek_value()[idx], std::forward<_PrevArgs2>(args)...);
+			std::unique_lock<std::mutex> _Lock(this->_Mtx());
+			detail::_Fill_to_tuple<_Idx>(this->_Peek_value()[idx], std::forward<_PrevArgs2>(args)...);
 		}
 		template<size_t _Idx, class _PrevTuple>
 		void _Set_value_partial_t(size_t idx, _PrevTuple&& args)
 		{
-			assert(idx < _Peek_value().size());
+			assert(idx < this->_Peek_value().size());
 
-			std::unique_lock<std::mutex> _Lock(_Mtx());
-			_Peek_value()[idx] = std::forward<_PrevTuple>(args);
-			//detail::_Move_to_tuple<_Idx>(_Peek_value()[idx], std::forward<_PrevTuple>(args));
+			std::unique_lock<std::mutex> _Lock(this->_Mtx());
+			this->_Peek_value()[idx] = std::forward<_PrevTuple>(args);
 		}
 
 		void _On_result(size_t)
 		{
 			if (--_Result_count == 0)
 			{
-				_Ptr()->_Set_value(false);
-				_Ready = true;
-				invoke_then_if();
+				this->_Set_value();
+				this->_Ready = true;
+				this->invoke_then_if();
 			}
 		}
 
 		template<class... Args2>
 		bool invoke_thiz(Args2&&... args)
 		{
-			static_assert(sizeof...(Args2) >= typename std::tuple_size<args_tuple_type>::value, "");
+			static_assert(sizeof...(Args2) >= std::tuple_size<args_tuple_type>::value, "");
 
 			try
 			{
-				std::unique_lock<std::mutex> _Lock(_Mtx());
+				std::unique_lock<std::mutex> _Lock(this->_Mtx());
 				task_vector all_task = std::move(_All_tasks);
 				_Lock.unlock();
 
@@ -81,14 +82,14 @@ namespace lib_shark_task
 				}
 				else
 				{
-					_Ptr()->_Set_value(false);
-					_Ready = true;
+					this->_Set_value();
+					this->_Ready = true;
 					return true;
 				}
 			}
 			catch (...)
 			{
-				_Set_Agent_exception(std::current_exception());
+				this->_Set_Agent_exception(std::current_exception());
 			}
 
 			return false;
@@ -97,11 +98,11 @@ namespace lib_shark_task
 		template<class _PrevTuple>
 		bool invoke_thiz_tuple(_PrevTuple&& args)
 		{
-			static_assert(typename std::tuple_size<_PrevTuple>::value >= typename std::tuple_size<args_tuple_type>::value, "");
+			static_assert(std::tuple_size<_PrevTuple>::value >= std::tuple_size<args_tuple_type>::value, "");
 
 			try
 			{
-				std::unique_lock<std::mutex> _Lock(_Mtx());
+				std::unique_lock<std::mutex> _Lock(this->_Mtx());
 				task_vector all_task = std::move(_All_tasks);
 				_Lock.unlock();
 
@@ -112,14 +113,14 @@ namespace lib_shark_task
 				}
 				else
 				{
-					_Ptr()->_Set_value(false);
-					_Ready = true;
+					this->_Set_value();
+					this->_Ready = true;
 					return true;
 				}
 			}
 			catch (...)
 			{
-				_Set_Agent_exception(std::current_exception());
+				this->_Set_Agent_exception(std::current_exception());
 			}
 
 			return false;

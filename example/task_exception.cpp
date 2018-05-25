@@ -9,6 +9,18 @@
 
 using namespace std::literals;
 
+namespace std
+{
+	class divide_0_exception : public exception
+	{
+	public:
+		virtual const char* what() const _NOEXCEPT
+		{
+			return "divide by zero";
+		}
+	};
+}
+
 void test_task_exception()
 {
 	using namespace st;
@@ -16,13 +28,13 @@ void test_task_exception()
 	auto t = make_task([](int val)
 	{
 		std::cout << "delay run " << std::this_thread::get_id() << std::endl;
-		if (val == 0) throw std::exception("divide by zero");
+		if (val == 0) throw std::divide_0_exception();
 		return 10 / val;
 	}).then(async_context, [](int val)
 	{
 		std::this_thread::sleep_for(1s);
 		std::cout << "run in another thread " << std::this_thread::get_id() << std::endl;
-		if (val == 0) throw std::exception("divide by zero");
+		if (val == 0) throw std::divide_0_exception();
 		return 10 / val;
 	});
 

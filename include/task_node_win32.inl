@@ -92,6 +92,10 @@ namespace lib_shark_task
 		{
 			_Ptr()->_Set_value(std::forward<_Ty2>(val), false);
 		}
+		inline void _Set_value()
+		{
+			_Ptr()->_Set_value(false);
+		}
 		//…Ë÷√“Ï≥£
 		inline void _Set_Agent_exception(std::exception_ptr && val)
 		{

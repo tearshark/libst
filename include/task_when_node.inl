@@ -39,6 +39,7 @@ namespace lib_shark_task
 	template<class _Ndone, class... _PrevArgs>
 	struct task_when_one : public node_impl<int, std::function<void(_PrevArgs...)>>
 	{
+		using base_type = node_impl<int, std::function<void(_PrevArgs...)>>;
 		using this_type = task_when_one<_Ndone, _PrevArgs...>;
 
 		using result_type = void;									//本节点的结果的类型
@@ -47,13 +48,13 @@ namespace lib_shark_task
 
 		using notify_node = typename _Ndone::notify_node;
 		using cated_tuple = typename _Ndone::cated_tuple;
-		static const size_t cated_tuple_index = typename _Ndone::index;
+		static const size_t cated_tuple_index = _Ndone::index;
 	private:
 		notify_node *						_Notify;
 		size_t								_Index;
 	public:
 		task_when_one(const task_set_exception_agent_sptr & exp, notify_node * nn, size_t idx)
-			: node_impl(exp)
+			: base_type(exp)
 			, _Notify(nn)
 			, _Index(idx)
 		{
@@ -66,46 +67,45 @@ namespace lib_shark_task
 		template<class... _PrevArgs2>
 		bool invoke_thiz(_PrevArgs2&&... args)
 		{
-			static_assert(sizeof...(_PrevArgs2) >= typename std::tuple_size<args_tuple_type>::value, "");
+			static_assert(sizeof...(_PrevArgs2) >= std::tuple_size<args_tuple_type>::value, "");
 
 			try
 			{
 				_Notify->template _Set_value_partial<cated_tuple_index>(_Index, std::forward<_PrevArgs2>(args)...);
-				_Set_value(0);
-				_Ready = true;
+				this->_Set_value(0);
+				this->_Ready = true;
 			}
 			catch (...)
 			{
-				_Set_Agent_exception(std::current_exception());
+				this->_Set_Agent_exception(std::current_exception());
 			}
 
-			return _Ready;
+			return this->_Ready;
 		}
 
 		template<class _PrevTuple>
 		bool invoke_thiz_tuple(_PrevTuple&& args)
 		{
-			static_assert(typename std::tuple_size<_PrevTuple>::value >= typename std::tuple_size<args_tuple_type>::value, "");
+			static_assert(std::tuple_size<_PrevTuple>::value >= std::tuple_size<args_tuple_type>::value, "");
 
 			try
 			{
 				_Notify->template _Set_value_partial_t<cated_tuple_index>(_Index, std::forward<_PrevTuple>(args));
-				_Set_value(0);
-				_Ready = true;
+				this->_Set_value(0);
+				this->_Ready = true;
 			}
 			catch (...)
 			{
-				_Set_Agent_exception(std::current_exception());
+				this->_Set_Agent_exception(std::current_exception());
 			}
 
-			return _Ready;
+			return this->_Ready;
 		}
 
 		void invoke_then_if()
 		{
 			if (_Notify == nullptr)
-				std::_Throw_future_error(
-					std::make_error_code(std::future_errc::future_already_retrieved));
+				throw std::future_error(std::make_error_code(std::future_errc::future_already_retrieved));
 
 			_Notify->_On_result(_Index);
 			_Notify = nullptr;

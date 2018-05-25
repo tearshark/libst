@@ -155,7 +155,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\example\semaphore.h" />
+    <ClInclude Include="..\example\task_semaphore.h" />
     <ClInclude Include="..\example\threadpool_context.h" />
     <ClInclude Include="..\include\task.h" />
     <ClInclude Include="..\include\task_context.h" />

@@ -36,9 +36,6 @@
     <ClInclude Include="..\example\threadpool_context.h">
       <Filter>example</Filter>
     </ClInclude>
-    <ClInclude Include="..\example\semaphore.h">
-      <Filter>example</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\task_when_all.h">
       <Filter>libst</Filter>
     </ClInclude>
@@ -47,6 +44,9 @@
     </ClInclude>
     <ClInclude Include="..\libtask.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\example\task_semaphore.h">
+      <Filter>example</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

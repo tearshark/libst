@@ -1,4 +1,4 @@
-APP_ABI := armeabi armeabi-v7a x86 mips
+APP_ABI := all
 
 #使用默认最小的C++运行库，这样生成的应用体积小，内存占用小，但部分功能将无法支持
 #APP_STL := system

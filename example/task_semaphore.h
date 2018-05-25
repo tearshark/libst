@@ -5,16 +5,12 @@
 
 #if defined(_WIN32)
 #include <windows.h>
-
 #elif defined(ANDROID)
 #include <semaphore.h>
-
 #elif defined(__MACH__)
 #include <mach/mach.h>
-
 #elif defined(__unix__)
 #include <semaphore.h>
-
 #endif
 
 namespace std
@@ -193,16 +189,16 @@ namespace std
 		}
 	};
 
-#elif defined(__unix__) || defined(ANDROID)
+#elif defined(ANDROID)
 
 	//---------------------------------------------------------
-	// Semaphore (POSIX, Linux)
+	// Semaphore (Android)
 	//---------------------------------------------------------
 
 	class shared_semaphore
 	{
 	protected:
-		sem_t m_hSema;
+		sem_t * m_hSema;
 	public:
 		operator bool() const
 		{
@@ -214,7 +210,7 @@ namespace std
 			// http://stackoverflow.com/questions/2013181/gdb-causes-sem-wait-to-fail-with-eintr-error
 			int rc;
 			do {
-				rc = sem_wait(&m_hSema);
+				rc = sem_wait(m_hSema);
 			} while (rc == -1 && errno == EINTR);
 		}
 
@@ -222,7 +218,7 @@ namespace std
 		{
 			int rc;
 			do {
-				rc = sem_trywait(&m_hSema);
+				rc = sem_trywait(m_hSema);
 			} while (rc == -1 && errno == EINTR);
 			return !(rc == -1 && errno == EAGAIN);
 		}
@@ -248,25 +244,25 @@ namespace std
 			int rc;
 			do
 			{
-				rc = sem_timedwait(&m_hSema, &ts);
+				rc = sem_timedwait(m_hSema, &ts);
 			} while (rc == -1 && errno == EINTR);
 			return !(rc == -1 && errno == ETIMEDOUT);
 		}
 
 		void signal()
 		{
-			sem_post(&m_hSema);
+			sem_post(m_hSema);
 		}
 
 		void signal(int count)
 		{
 			while (count-- > 0)
 			{
-				sem_post(&m_hSema);
+				sem_post(m_hSema);
 			}
 		}
 
-		sem_t native_handle() const
+		sem_t * native_handle() const
 		{
 			return m_hSema;
 		}
@@ -281,11 +277,12 @@ namespace std
 		semaphore(int initialCount = 0)
 		{
 			assert(initialCount >= 0);
-			sem_init(&m_hSema, 0, initialCount);
+			m_hSema = new sem_t;
+			sem_init(m_hSema, 0, initialCount);
 		}
 		semaphore(semaphore && _Right)
-			: m_hSema(_Right.m_hSema)
 		{
+			m_hSema = _Right.m_hSema;
 			_Right.m_hSema = nullptr;
 		}
 		semaphore & operator = (semaphore && _Right)
@@ -299,14 +296,140 @@ namespace std
 		}
 		void swap(semaphore & _Right)
 		{
-			sem_t hSema = m_hSema;
+			sem_t * hSema = m_hSema;
 			m_hSema = _Right.m_hSema;
 			_Right.m_hSema = hSema;
 		}
 
 		~semaphore()
 		{
-			sem_destroy(&m_hSema);
+			if (m_hSema != nullptr)
+			{
+				sem_destroy(m_hSema);
+				delete m_hSema;
+			}
+		}
+	};
+
+#elif defined(__unix__)
+
+	//---------------------------------------------------------
+	// Semaphore (POSIX, Linux)
+	//---------------------------------------------------------
+
+	class shared_semaphore
+	{
+	protected:
+		sem_t * m_hSema;
+	public:
+		operator bool() const
+		{
+			return m_hSema != nullptr;
+		}
+
+		void wait()
+		{
+			// http://stackoverflow.com/questions/2013181/gdb-causes-sem-wait-to-fail-with-eintr-error
+			int rc;
+			do {
+				rc = sem_wait(m_hSema);
+			} while (rc == -1 && errno == EINTR);
+		}
+
+		bool try_wait()
+		{
+			int rc;
+			do {
+				rc = sem_trywait(m_hSema);
+			} while (rc == -1 && errno == EINTR);
+			return !(rc == -1 && errno == EAGAIN);
+		}
+
+		bool timed_wait(std::chrono::microseconds dt)
+		{
+			struct timespec ts;
+			const int usecs_in_1_sec = 1000000;
+			const int nsecs_in_1_sec = 1000000000;
+			clock_gettime(CLOCK_REALTIME, &ts);
+
+			ts.tv_sec += dt.count() / usecs_in_1_sec;
+			ts.tv_nsec += (dt.count() % usecs_in_1_sec) * 1000;
+
+			// sem_timedwait bombs if you have more than 1e9 in tv_nsec
+			// so we have to clean things up before passing it in
+			if (ts.tv_nsec >= nsecs_in_1_sec)
+			{
+				ts.tv_nsec -= nsecs_in_1_sec;
+				++ts.tv_sec;
+			}
+
+			int rc;
+			do
+			{
+				rc = sem_timedwait(m_hSema, &ts);
+			} while (rc == -1 && errno == EINTR);
+			return !(rc == -1 && errno == ETIMEDOUT);
+		}
+
+		void signal()
+		{
+			sem_post(m_hSema);
+		}
+
+		void signal(int count)
+		{
+			while (count-- > 0)
+			{
+				sem_post(m_hSema);
+			}
+		}
+
+		sem_t * native_handle() const
+		{
+			return m_hSema;
+		}
+	};
+
+	class semaphore : public shared_semaphore
+	{
+	private:
+		semaphore(const semaphore& other) = delete;
+		semaphore& operator=(const semaphore& other) = delete;
+	public:
+		semaphore(int initialCount = 0)
+		{
+			assert(initialCount >= 0);
+			m_hSema = new sem_t;
+			sem_init(m_hSema, 0, initialCount);
+		}
+		semaphore(semaphore && _Right)
+		{
+			m_hSema = _Right.m_hSema;
+			_Right.m_hSema = nullptr;
+		}
+		semaphore & operator = (semaphore && _Right)
+		{
+			if (this != &_Right)
+			{
+				m_hSema = _Right.m_hSema;
+				_Right.m_hSema = nullptr;
+			}
+			return *this;
+		}
+		void swap(semaphore & _Right)
+		{
+			sem_t * hSema = m_hSema;
+			m_hSema = _Right.m_hSema;
+			_Right.m_hSema = hSema;
+		}
+
+		~semaphore()
+		{
+			if (m_hSema != nullptr)
+			{
+				sem_destroy(m_hSema);
+				delete m_hSema;
+			}
 		}
 	};
 
