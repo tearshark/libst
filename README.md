@@ -27,7 +27,7 @@
 	//构建任务链的首节点，这个首节点什么事情都不做
 
 	template<class _Context, class _Ftype>
-	auto make_task(_Context & ctx, _Ftype && fn)
+	task<> make_task(_Context & ctx, _Ftype && fn)
 	//构建一个任务链，首节点什么事情都不做，第二个节点将fn放入ctx里运行。从而看起来将首任务投入到ctx里运行。
 ```
 
@@ -50,11 +50,11 @@
 ## then
 ```C++
 	template<class _Ftype>
-	auto task::then(_Ftype && fn)
+	task<> task::then(_Ftype && fn)
 	//在上一个链节点后继续运行fn
 	
 	template<class _Context, class _Ftype> 
-	auto task::then(_Context & ctx, _Ftype && fn)
+	task<> task::then(_Context & ctx, _Ftype && fn)
 	//在上一个链节点后，投递到指定的ctx里继续运行fn
 
 	//注：
@@ -65,11 +65,11 @@
 ## marshal
 ```C++
 	template<class _Fcb, class... _Types>
-	auto task::marshal(_Fcb&& fn, _Types&&... args)
+	task<> task::marshal(_Fcb&& fn, _Types&&... args)
 	//在上一个链节点后继续运行fn。
 	
 	template<class _Context, class _Fcb, class... _Types> 
-	auto task::marshal(_Context & ctx, _Fcb&& fn, _Types&&... args)
+	task<> task::marshal(_Context & ctx, _Fcb&& fn, _Types&&... args)
 	//在上一个链节点后，投递到指定的ctx里继续运行fn
 	
 	//注：
@@ -82,12 +82,12 @@
 	#include "task_when_all.h"
 	
 	template<class _Task, class... _TaskRest>
-	auto when_all(_Task& tfirst, _TaskRest&... rest)
+	task<> when_all(_Task& tfirst, _TaskRest&... rest)
 	//等待多个不同类型的任务完成。
 	//多个任务的结果，放在一个拼合的tuple<>里。这个拼合的tuple<>，将作为下一个任务节点的入参，或者最后一个节点future<tuple<>>的结果。
 	
 	template<class _Iter, typename _Fty = std::enable_if_t<detail::is_task_v<decltype(*std::declval<_Iter>())>, decltype(*std::declval<_Iter>())>>
-	auto when_all(_Iter begin, _Iter end)
+	task<> when_all(_Iter begin, _Iter end)
 	//等待一组相同类型的任务完成.
 	//多个任务的结果类型肯定是一致的，数量运行时才能确定。故结果放在vector<>里。
 	//如果每个任务返回的是单值，则为vector<T>；如果返回的多值，则为vector<tuple<T>>。
@@ -98,11 +98,11 @@
 	#include "task_when_any.h"
 	
 	template<class _Task, class... _TaskRest>
-	auto when_any(_Task& tfirst, _TaskRest&... rest)
+	task<> when_any(_Task& tfirst, _TaskRest&... rest)
 	//等待多个不同类型的任务之一完成。
 	
 	template<class _Iter, typename _Fty = std::enable_if_t<detail::is_task_v<decltype(*std::declval<_Iter>())>, decltype(*std::declval<_Iter>())>>
-	auto when_all(_Iter begin, _Iter end)
+	task<> when_all(_Iter begin, _Iter end)
 	//等待多个不同类型的任务之一完成.
 	//多个任务的结果类型肯定是一致的，故返回值的第一个参数指示是哪一个任务完成，后续参数是结果
 ```
@@ -142,7 +142,7 @@
 	在当前线程，立即运行task_context的实现。注意，需要在某个地方定义imm_context。
 	
 	extern async_task_context async_context;
-	使用std::async运行task_context的实现。注意，需要在某个地方定义async_context。
+	使用std::thread运行task_context的实现。注意，需要在某个地方定义async_context。
 ```
 
 ## executor
