@@ -4,25 +4,76 @@
 namespace lib_shark_task
 {
 #ifdef ANDROID
-	template<class _Rtype>
-	struct __assoc_state_hack : public std::__assoc_state<_Rtype>
+	namespace detail
 	{
-		std::mutex & _Mtx()
+		template<class _Rtype>
+		struct __assoc_state_hack : public std::__assoc_state<_Rtype>
 		{
-			return this->__mut_;
-		}
-		_Rtype _Get_value()
-		{
-			std::unique_lock<std::mutex> __lk(this->__mut_);
+			std::mutex & _Mtx()
+			{
+				return this->__mut_;
+			}
+			_Rtype _Get_value()
+			{
+				std::unique_lock<std::mutex> __lk(this->__mut_);
 
-			this->__state_ |= std::__assoc_state<_Rtype>::__future_attached;
-			return this->__value_;
-		}
-		_Rtype & _Peek_value()
+				this->__state_ |= std::__assoc_state<_Rtype>::__future_attached;
+				return std::move(*reinterpret_cast<_Rtype*>(&this->__value_));
+			}
+			_Rtype & _Peek_value()
+			{
+				return *reinterpret_cast<_Rtype*>(&this->__value_);
+			}
+		};
+		
+		//这是std::future的孪生兄弟
+		//由于std::future只有私有的从__assoc_state初始化的构造函数
+		//故由孪生兄弟来提供公开的从std::__assoc_state初始化的构造函数
+		//然后使用C++的联合构造出std::future
+		template<class _Rp>
+		struct future_twin
 		{
-			return this->__value_;
-		}
-	};
+			std::__assoc_state<_Rp>* __state_;
+
+			//保持跟std::future的构造函数行为一致
+			explicit future_twin(std::__assoc_state<_Rp>* __state)
+				: __state_(__state)
+			{
+#ifndef _LIBCPP_NO_EXCEPTIONS
+				if (__state_->__has_future_attached())
+					throw std::future_error(std::make_error_code(std::future_errc::future_already_retrieved));
+#endif
+				__state_->__add_shared();
+				__state_->__set_future_attached();
+			}
+		};
+
+		//使用C++的联合来黑客std::future的构造函数
+		template<class _Rp>
+		union future_hack
+		{
+			//保证future_twin与std::future的尺寸一致，这样来保证其二进制数据一致
+			static_assert(sizeof(std::future<_Rp>) == sizeof(future_twin<_Rp>), "");
+
+			std::future<_Rp>		__f_stl;
+			future_twin<_Rp>		__f_hack;
+
+			explicit future_hack(std::__assoc_state<_Rp>* __state)
+			{
+				new(&__f_hack) future_twin<_Rp>(__state);
+			}
+			~future_hack()
+			{
+				__f_stl.~future();
+			}
+
+			//将构造得到的std::future移动出去。剩下的就是无用的数据了，爱咋咋地
+			std::future<_Rp> move()
+			{
+				return std::move(__f_stl);
+			}
+		};
+	}
 
 	//实现存取任务节点的结果。
 	//存取结果值
@@ -33,13 +84,13 @@ namespace lib_shark_task
 							, public task_set_exception
 	{
 	protected:
-		__assoc_state_hack<_Rtype>*		_State;						//通过clang的future内部的__assoc_state来实现future功能。今后考虑自己做future
+		detail::__assoc_state_hack<_Rtype>*	_State;					//通过clang的future内部的__assoc_state来实现future功能。今后考虑自己做future
 		task_set_exception_agent_sptr	_Exception;					//传递异常的代理接口
 		std::atomic<bool>				_Ready{ false };			//结果是否已经准备好了，线程安全
 
 	public:
 		node_result_(const task_set_exception_agent_sptr & exp)
-			: _State(new __assoc_state_hack<_Rtype>)
+			: _State(new detail::__assoc_state_hack<_Rtype>)
 			, _Exception(exp)
 		{
 		}
@@ -59,11 +110,9 @@ namespace lib_shark_task
 		inline std::future<_Rtype> get_future()
 		{
 			assert(!is_retrieved());
-			return std::__make_deferred_assoc_state<_Rtype>([this]()
-			{
-				return _State;
-			});
-			//return (std::future<_Rtype>(_State));
+
+			detail::future_hack<_Rtype> f{ _State };
+			return f.move();
 		}
 
 		//结果是否已经准备好了，线程安全
