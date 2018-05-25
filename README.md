@@ -5,14 +5,18 @@
 
 # 主要特性
 
-- 实现一个链式调用的任务链功能，来减少callback hell的问题；
+- 实现一个链式调用的任务链功能，来减少回调地狱的问题；
 - 通过std::future, 获取最后一个调用的结果。如果中途发生了异常，则std::future::get()会抛出异常；
-- 支持将后续调用指定到特定的“执行环境”上去调用，从而控制执行的时机和线程；
-- 支持C++14/17。由于想节省一些内存，使用了VS的_Promise实现，故只支持VS2015/VS2017;
+- 支持将后续调用绑定到特定的“执行环境”上去调用，从而精确控制执行的时机和线程；
+- 支持将一个回调函数包装成一个任务节点。回调参数即任务节点返回值；
+- 需求环境:
+	- 需要也只需要C++14；
+	- Windows下，使用了VS的_Promise实现，故只支持VS2015/VS2017；
+	- Android下，由于NDK附带的GCC版本只到4.9，不支持C++14。故需要clang 3.6；
 
 # roadmap
-- when_all/when_any
-- 支持Android/iOS
+- when_any
+- 支持Android(卡住了)/iOS
 
 # 接口说明
 
@@ -86,7 +90,7 @@
 	//等待多个不同类型的任务完成。
 	//多个任务的结果，放在一个拼合的tuple<>里。这个拼合的tuple<>，将作为下一个任务节点的入参，或者最后一个节点future<tuple<>>的结果。
 	
-	template<class _Iter, typename _Fty = std::enable_if_t<detail::is_task_v<decltype(*std::declval<_Iter>())>, decltype(*std::declval<_Iter>())>>
+	template<class _Iter>
 	task<> when_all(_Iter begin, _Iter end)
 	//等待一组相同类型的任务完成.
 	//多个任务的结果类型肯定是一致的，数量运行时才能确定。故结果放在vector<>里。
@@ -101,8 +105,8 @@
 	task<> when_any(_Task& tfirst, _TaskRest&... rest)
 	//等待多个不同类型的任务之一完成。
 	
-	template<class _Iter, typename _Fty = std::enable_if_t<detail::is_task_v<decltype(*std::declval<_Iter>())>, decltype(*std::declval<_Iter>())>>
-	task<> when_all(_Iter begin, _Iter end)
+	template<class _Iter>
+	task<> when_any(_Iter begin, _Iter end)
 	//等待多个不同类型的任务之一完成.
 	//多个任务的结果类型肯定是一致的，故返回值的第一个参数指示是哪一个任务完成，后续参数是结果
 ```
@@ -116,7 +120,7 @@
 ## get_executor
 ```C++
 	executor_sptr task::get_executor() 
-	//返回task_executor<FirstState>，以便于在指定的task_context里运行
+	//返回task_executor<_FirstNode>，以便于在指定的task_context里运行
 	
 	template<class... _Args>
 	void task::operator()(_Args&&... args) const 
@@ -127,7 +131,7 @@
 ```C++
 	template<class _Rtype, class... _PrevArgs>
 	struct task_node
-	包装任务链节点。通过内嵌promise实现，提供get_future()功能
+	//包装任务链节点。通过内嵌promise实现，提供get_future()功能
 ```
 
 ## task_context
@@ -135,20 +139,20 @@
 	concept task_context
 	{
 		void add(const executor_sptr & runner) const;
-	}
-	代表任务运行环境/线程的虚类，需要外部实现某种运行方案
+	};
+	//代表任务运行环境/线程的虚类，需要外部实现某种运行方案
 	
 	extern immediate_task_context imm_context;
-	在当前线程，立即运行task_context的实现。注意，需要在某个地方定义imm_context。
+	//在当前线程，立即运行task_context的实现。注意，需要在某个地方定义imm_context。
 	
 	extern async_task_context async_context;
-	使用std::thread运行task_context的实现。注意，需要在某个地方定义async_context。
+	//使用std::thread运行task_context的实现。注意，需要在某个地方定义async_context。
 ```
 
 ## executor
 ```C++
 	template<class _State>
 	struct task_executor : public executor
-	将task包装成执行器，以便于放入指定的task_context里运行
+	//将task包装成执行器，以便于放入指定的task_context里运行
 ```
 
