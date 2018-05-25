@@ -20,54 +20,61 @@
 ```C++
 	template<class _Ftype>
 	task<> make_task(_Ftype && fn);
-	构建任务链的首节点。
-	_Ftype是一个函数(对象)
+	//构建任务链的首节点。
+	//_Ftype是一个函数(对象)
+
+	task<> make_task();
+	//构建任务链的首节点，这个首节点什么事情都不做
+
+	template<class _Context, class _Ftype>
+	auto make_task(_Context & ctx, _Ftype && fn)
+	//构建一个任务链，首节点什么事情都不做，第二个节点将fn放入ctx里运行。从而看起来将首任务投入到ctx里运行。
 ```
 
 ## marshal_task
 ```C++
 	template<class _Fcb, class... _Args>
 	task<> marshal_task(_Fcb&& fn, _Args&&... args)
-	构建任务链的首节点。
-	_Fcb是一个基于回调的函数(对象)。
-	_Fcb的返回值不再关心。并且_Fcb内部要么抛异常，要么就必须调用回调函数，并且不关心回调函数的返回值
+	//构建任务链的首节点。
+	//_Fcb是一个基于回调的函数(对象)。
+	//_Fcb的返回值不再关心。并且_Fcb内部要么抛异常，要么就必须调用回调函数，并且不关心回调函数的返回值
 ```
 
 ## task
 ```C++
 	template<class _FirstNode, class _LastNode>
 	struct task
-	任务调用链。通过make_task/marshal_task生成，然后不停的then/marshal生成调用链。
+	//任务调用链。通过make_task/marshal_task生成，然后不停的then/marshal生成调用链。
 ```
 
 ## then
 ```C++
 	template<class _Ftype>
-	auto then(_Ftype && fn)
-	在上一个链节点后继续运行fn
+	auto task::then(_Ftype && fn)
+	//在上一个链节点后继续运行fn
 	
 	template<class _Context, class _Ftype> 
-	auto then(_Context & ctx, _Ftype && fn)
-	在上一个链节点后，投递到指定的ctx里继续运行fn
+	auto task::then(_Context & ctx, _Ftype && fn)
+	//在上一个链节点后，投递到指定的ctx里继续运行fn
 
-	注：
-	_Ftype的入参，是上一个调用链节点的返回值。
-	如果上一个调用链节点的返回值是std::tuple<...>类型，则fn的入参，是tuple解包后的参数。目前要求参数个数/类型精确匹配。
+	//注：
+	//_Ftype的入参，是上一个调用链节点的返回值。
+	//如果上一个调用链节点的返回值是std::tuple<...>类型，则fn的入参，是tuple解包后的参数。目前要求参数个数/类型精确匹配。
 ```
 
 ## marshal
 ```C++
 	template<class _Fcb, class... _Types>
-	auto marshal(_Fcb&& fn, _Types&&... args)
-	在上一个链节点后继续运行fn。
+	auto task::marshal(_Fcb&& fn, _Types&&... args)
+	//在上一个链节点后继续运行fn。
 	
 	template<class _Context, class _Fcb, class... _Types> 
-	auto marshal(_Context & ctx, _Fcb&& fn, _Types&&... args)
-	在上一个链节点后，投递到指定的ctx里继续运行fn
+	auto task::marshal(_Context & ctx, _Fcb&& fn, _Types&&... args)
+	//在上一个链节点后，投递到指定的ctx里继续运行fn
 	
-	注：
-	_Fcb是一个基于回调的函数(对象)。其回调函数参数使用内部构造的兼容对象，其他参数是上一个调用链节点的返回值。
-	回调函数的入参，作为本任务节点的返回值
+	//注：
+	//_Fcb是一个基于回调的函数(对象)。其回调函数参数使用内部构造的兼容对象，其他参数是上一个调用链节点的返回值。
+	//回调函数的入参，作为本任务节点的返回值
 ```
 
 ## when_all
@@ -76,29 +83,44 @@
 	
 	template<class _Task, class... _TaskRest>
 	auto when_all(_Task& tfirst, _TaskRest&... rest)
-	等待多个不同类型的任务完成。
-	多个任务的结果，放在一个拼合的tuple<>里。这个拼合的tuple<>，将作为下一个任务节点的入参，或者最后一个节点future<tuple<>>的结果。
+	//等待多个不同类型的任务完成。
+	//多个任务的结果，放在一个拼合的tuple<>里。这个拼合的tuple<>，将作为下一个任务节点的入参，或者最后一个节点future<tuple<>>的结果。
 	
 	template<class _Iter, typename _Fty = std::enable_if_t<detail::is_task_v<decltype(*std::declval<_Iter>())>, decltype(*std::declval<_Iter>())>>
 	auto when_all(_Iter begin, _Iter end)
-	等待一组相同类型的任务完成.
-	多个任务的结果类型肯定是一致的，数量运行时才能确定。故结果放在vector<>里。
-	如果每个任务返回的是单值，则为vector<T>；如果返回的多值，则为vector<tuple<T>>。
+	//等待一组相同类型的任务完成.
+	//多个任务的结果类型肯定是一致的，数量运行时才能确定。故结果放在vector<>里。
+	//如果每个任务返回的是单值，则为vector<T>；如果返回的多值，则为vector<tuple<T>>。
+```
+
+## when_any
+```C++
+	#include "task_when_any.h"
+	
+	template<class _Task, class... _TaskRest>
+	auto when_any(_Task& tfirst, _TaskRest&... rest)
+	//等待多个不同类型的任务之一完成。
+	
+	template<class _Iter, typename _Fty = std::enable_if_t<detail::is_task_v<decltype(*std::declval<_Iter>())>, decltype(*std::declval<_Iter>())>>
+	auto when_all(_Iter begin, _Iter end)
+	//等待多个不同类型的任务之一完成.
+	//多个任务的结果类型肯定是一致的，故返回值的第一个参数指示是哪一个任务完成，后续参数是结果
 ```
 
 ## get_future
 ```C++
-	get_future() 
-	返回最后一个链节点的返回值
+	std::future<> task::get_future() 
+	//返回最后一个链节点的返回值
 ```
 
 ## get_executor
 ```C++
-	get_executor() 
-	返回task_executor<FirstState>，以便于在指定的task_context里运行
+	executor_sptr task::get_executor() 
+	//返回task_executor<FirstState>，以便于在指定的task_context里运行
 	
-	template<class... _Args> void operator()(_Args&&... args) const 
-	执行整个调用链。args...参数必须跟第一个链节点需要的参数匹配
+	template<class... _Args>
+	void task::operator()(_Args&&... args) const 
+	//执行整个调用链。args...参数必须跟第一个链节点需要的参数匹配
 ```
 
 ## task_node
