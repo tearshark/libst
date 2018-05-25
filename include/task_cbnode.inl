@@ -134,7 +134,6 @@ namespace lib_shark_task
 				cb._Assoc_node = std::static_pointer_cast<task_cbnode>(this->shared_from_this());
 
 				detail::_Apply_then(fn, std::move(cb), std::forward<_PrevArgs2>(args)...);
-				//fn(std::move(cb), std::forward<_PrevArgs2>(args)...);
 			}
 			catch (...)
 			{
@@ -157,7 +156,6 @@ namespace lib_shark_task
 				cb._Assoc_node = std::static_pointer_cast<task_cbnode>(this->shared_from_this());
 
 				detail::_Apply_function<task_function>::template _Apply_cat(fn, std::move(cb), std::forward<_PrevTuple>(args));
-				//std::apply(fn, std::tuple_cat(std::tuple<relay_type>{std::move(cb)}, std::forward<_PrevTuple>(args)));
 			}
 			catch (...)
 			{
@@ -179,7 +177,6 @@ namespace lib_shark_task
 			try
 			{
 				detail::_Apply_then(fn, std::move(this->_Get_value()));
-				//detail::_Invoke_then(fn, std::move(_Get_value()));
 			}
 			catch (...)
 			{
@@ -187,8 +184,8 @@ namespace lib_shark_task
 			}
 		}
 
-		template<class _Ftype>
-		void _Set_then_if(_Ftype && fn)
+		template<class _NextFx>
+		void _Set_then_if(_NextFx && fn)
 		{
 			this->_Set_retrieved();
 
@@ -196,8 +193,7 @@ namespace lib_shark_task
 			{
 				try
 				{
-					detail::_Apply_then2<then_function>(std::forward<_Ftype>(fn), std::move(this->_Get_value()));
-					//detail::_Invoke_then(fn, std::move(_Get_value()));
+					detail::_Apply_then2<then_function>(std::forward<_NextFx>(fn), std::move(this->_Get_value()));
 				}
 				catch (...)
 				{
@@ -207,7 +203,7 @@ namespace lib_shark_task
 			else
 			{
 				std::unique_lock<std::mutex> _Lock(this->_Mtx());
-				this->_Then = then_function{ std::forward<_Ftype>(fn) };
+				this->_Then = then_function{ std::forward<_NextFx>(fn) };
 			}
 		}
 

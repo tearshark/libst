@@ -124,50 +124,6 @@ namespace lib_shark_task
 
 			return false;
 		}
-
-		void invoke_then_if()
-		{
-			if (!_Ready)
-				return;
-
-			then_function fn = _Move_then();
-			if (!fn)
-				return;
-
-			try
-			{
-				detail::_Apply_then(fn, std::move(_Get_value()));
-				//detail::_Invoke_then(fn, std::move(_Get_value()));
-			}
-			catch (...)
-			{
-				_Set_Agent_exception(std::current_exception());
-			}
-		}
-
-		template<class _NextFx>
-		void _Set_then_if(_NextFx && fn)
-		{
-			_Set_retrieved();
-
-			if (_Ready)
-			{
-				try
-				{
-					detail::_Apply_then2<then_function>(std::forward<_NextFx>(fn), std::move(_Get_value()));
-					//detail::_Invoke_then(fn, std::move(_Get_value()));
-				}
-				catch (...)
-				{
-					_Set_Agent_exception(std::current_exception());
-				}
-			}
-			else
-			{
-				std::unique_lock<std::mutex> _Lock(_Mtx());
-				_Then = then_function{ std::forward<_NextFx>(fn) };
-			}
-		}
 	};
 	template<class _Ttuple, class... _ResultArgs>
 	struct task_allv_node<_Ttuple, std::tuple<_ResultArgs...>> : public task_allv_node<_Ttuple, _ResultArgs...>

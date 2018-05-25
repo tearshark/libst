@@ -160,12 +160,41 @@ namespace lib_shark_task
 			}
 		};
 
+#ifdef _WIN32
+#ifdef _MSC_VER
+		template<class _Ret, class _Fx, class... _Types>
+		using binder_type = std::_Binder<_Ret, _Fx, _Types...>;
+#else
+#error "Unknown Compiler on Windows" 
+#endif
+#elif __APPLE__ 
+#error "Unknown platform" 
+#if TARGET_IPHONE_SIMULATOR // iOS Simulator 
+#error "Unknown platform" 
+#elif TARGET_OS_IPHONE // iOS device 
+#error "Unknown platform" 
+#elif TARGET_OS_MAC // Other kinds of Mac OS 
+#error "Unknown platform" 
+#else 
+#error "Unknown Apple platform" 
+#endif 
+#elif __ANDROID__ // android 
+#error "Unknown platform" 
+#elif __linux__ // linux 
+#error "Unknown platform" 
+#elif __unix__ // all unices not caught above // Unix 
+#error "Unknown platform" 
+#elif defined(_POSIX_VERSION) // POSIX 
+#error "Unknown platform" 
+#else 
+#error "Unknown platform" 
+#endif 
 
 		//std::bind()
 		template<class _Ret, class _Fx, class... _Types>
-		struct invoke_traits<std::_Binder<_Ret, _Fx, _Types...> >
+		struct invoke_traits<binder_type<_Ret, _Fx, _Types...> >
 		{
-			using bind_type = std::_Binder<_Ret, _Fx, _Types...>;
+			using bind_type = binder_type<_Ret, _Fx, _Types...>;
 
 			using result_type = typename bind_type::result_type;
 			using type = result_type(_Types...);
@@ -197,11 +226,11 @@ namespace lib_shark_task
 			}
 		};
 		template<class _Ret, class _Fx, class... _Types>
-		struct invoke_traits<std::_Binder<_Ret, _Fx, _Types...> &> : public invoke_traits<_Fx>
+		struct invoke_traits<binder_type<_Ret, _Fx, _Types...> &> : public invoke_traits<_Fx>
 		{
 		};
 		template<class _Ret, class _Fx, class... _Types>
-		struct invoke_traits<std::_Binder<_Ret, _Fx, _Types...> &&> : public invoke_traits<_Fx>
+		struct invoke_traits<binder_type<_Ret, _Fx, _Types...> &&> : public invoke_traits<_Fx>
 		{
 		};
 	}

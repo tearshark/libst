@@ -57,6 +57,48 @@ namespace lib_shark_task
 		node_impl & operator = (node_impl && _Right) = default;
 		node_impl(const node_impl & _Right) = delete;
 		node_impl & operator = (const node_impl & _Right) = delete;
+
+		void invoke_then_if()
+		{
+			if (!this->_Ready)
+				return;
+
+			then_function fn = this->_Move_then();
+			if (!fn)
+				return;
+
+			try
+			{
+				detail::_Apply_then(fn, std::move(this->_Get_value()));
+			}
+			catch (...)
+			{
+				this->_Set_Agent_exception(std::current_exception());
+			}
+		}
+
+		template<class _NextFx>
+		void _Set_then_if(_NextFx && fn)
+		{
+			this->_Set_retrieved();
+
+			if (this->_Ready)
+			{
+				try
+				{
+					detail::_Apply_then2<then_function>(std::forward<_NextFx>(fn), std::move(this->_Get_value()));
+				}
+				catch (...)
+				{
+					this->_Set_Agent_exception(std::current_exception());
+				}
+			}
+			else
+			{
+				std::unique_lock<std::mutex> _Lock(this->_Mtx());
+				this->_Then = then_function{ std::forward<_NextFx>(fn) };
+			}
+		}
 	protected:
 		//取执行当前任务节点的函数，只能取一次。线程安全
 		inline task_function _Move_thiz()
@@ -100,7 +142,6 @@ namespace lib_shark_task
 			{
 				task_function fn = this->_Move_thiz();
 				this->_Set_value(detail::_Apply_then(fn, std::forward<_PrevArgs2>(args)...));
-				//_Set_value(fn(std::forward<_PrevArgs2>(args)...));
 				this->_Ready = true;
 			}
 			catch (...)
@@ -120,7 +161,6 @@ namespace lib_shark_task
 			{
 				task_function fn = this->_Move_thiz();
 				this->_Set_value(detail::_Apply_then(fn, std::forward<_PrevTuple>(args)));
-				//_Set_value(std::apply(fn, std::forward<_PrevTuple>(args)));
 				this->_Ready = true;
 			}
 			catch (...)
@@ -129,50 +169,6 @@ namespace lib_shark_task
 			}
 
 			return this->_Ready;
-		}
-
-		void invoke_then_if()
-		{
-			if (!this->_Ready)
-				return;
-
-			then_function fn = this->_Move_then();
-			if (!fn)
-				return;
-
-			try
-			{
-				detail::_Apply_then(fn, std::move(this->_Get_value()));
-				//detail::_Invoke_then(fn, std::move(_Get_value()));
-			}
-			catch (...)
-			{
-				this->_Set_Agent_exception(std::current_exception());
-			}
-		}
-
-		template<class _NextFx>
-		void _Set_then_if(_NextFx && fn)
-		{
-			this->_Set_retrieved();
-
-			if (this->_Ready)
-			{
-				try
-				{
-					detail::_Apply_then2<then_function>(std::forward<_NextFx>(fn), std::move(this->_Get_value()));
-					//detail::_Invoke_then(fn, std::move(_Get_value()));
-				}
-				catch (...)
-				{
-					this->_Set_Agent_exception(std::current_exception());
-				}
-			}
-			else
-			{
-				std::unique_lock<std::mutex> _Lock(this->_Mtx());
-				this->_Then = then_function{ std::forward<_NextFx>(fn) };
-			}
 		}
 	};
 
@@ -197,7 +193,6 @@ namespace lib_shark_task
 			{
 				task_function fn = this->_Move_thiz();
 				detail::_Apply_then(fn, std::forward<_PrevArgs2>(args)...);
-				//fn(std::forward<_PrevArgs2>(args)...);
 				this->_Set_value(0);
 				this->_Ready = true;
 			}
@@ -218,7 +213,6 @@ namespace lib_shark_task
 			{
 				task_function fn = this->_Move_thiz();
 				detail::_Apply_then(fn, std::forward<_PrevTuple>(args));
-				//std::apply(fn, std::forward<_PrevTuple>(args));
 				this->_Set_value(0);
 				this->_Ready = true;
 			}
@@ -227,48 +221,6 @@ namespace lib_shark_task
 				this->_Set_Agent_exception(std::current_exception());
 			}
 			return this->_Ready;
-		}
-
-		void invoke_then_if()
-		{
-			if (!this->_Ready)
-				return;
-
-			then_function fn = this->_Move_then();
-			if (!fn)
-				return;
-
-			try
-			{
-				fn();
-			}
-			catch (...)
-			{
-				this->_Set_Agent_exception(std::current_exception());
-			}
-		}
-
-		template<class _NextFx>
-		void _Set_then_if(_NextFx && fn)
-		{
-			this->_Set_retrieved();
-
-			if (this->_Ready)
-			{
-				try
-				{
-					fn();
-				}
-				catch (...)
-				{
-					this->_Set_Agent_exception(std::current_exception());
-				}
-			}
-			else
-			{
-				std::unique_lock<std::mutex> _Lock(this->_Mtx());
-				this->_Then = std::forward<_NextFx>(fn);
-			}
 		}
 	};
 
