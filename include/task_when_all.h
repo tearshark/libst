@@ -37,7 +37,7 @@ namespace lib_shark_task
 	//		task_all_node 在所有任务完成后，调用invoke_then_if
 	//
 	template<class _Task, class... _TaskRest>
-	auto when_all(_Task& tfirst, _TaskRest&... rest)
+	auto when_all(_Task&& tfirst, _TaskRest&&... rest)
 	{
 		static_assert(detail::is_task<_Task>::value, "use 'make_task' or 'marshal_task' to create a task");
 		(void)std::initializer_list<int>{detail::check_task_type<_TaskRest>()...};

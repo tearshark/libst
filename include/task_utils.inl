@@ -19,7 +19,11 @@ namespace std
 	{	// invoke _Obj with the elements of _Tpl
 		return (_Apply_impl(forward<_Callable>(_Obj), forward<_Tuple>(_Tpl), make_index_sequence<tuple_size<decay_t<_Tuple>>::value>{}));
 	}
+}
+#endif
 
+namespace std
+{
 	template<typename _Tp, typename _Fx, size_t... Idx>
 	inline void tuple_for_each_(_Tp && t, const _Fx& f, index_sequence<Idx...>)
 	{
@@ -36,7 +40,6 @@ namespace std
 			make_index_sequence<tuple_size<tuple_type>::value>{});
 	}
 }
-#endif
 
 template<class _Ty>
 struct DEBUG_TYPE;

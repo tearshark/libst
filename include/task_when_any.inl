@@ -1,46 +1,85 @@
 #pragma once
+#include <any>
 #include "task_when_node.inl"
 
 namespace lib_shark_task
 {
-	//when_any(_Task1, _Task2, ...)
-	//当所有的任务的返回值都相同的时候，可以将结果简化为(size_t, result_type...)。
-	//task_anys_node就是用于这种情况
-	//
-	//_All_tasks 由于任务的类型不同，导致只能用一个std::tuple<>来保存
-	//因此，invoke_thiz/invoke_thiz_tuple采用for_each(std::tuple<>)语法来调用_All_tasks
-	//
-	//由于返回结果相同
-	//_Set_value_partial/_Set_value_partial_t 将idx存到get<0>(result_type)里，其他参数放在result_type后续的参数里
-	//
-	//_On_result 检测结果已经获得，并且之前保存的get<0>(result_type)与idx相同，则调用invoke_then_if
-	template<class _Ttuple, class... _ResultArgs>
-	struct task_anys_node : public node_impl<std::tuple<size_t, _ResultArgs...>, std::function<void()>, std::function<void(size_t, _ResultArgs...)>>
+	namespace detail
 	{
-		using base_type = node_impl<std::tuple<size_t, _ResultArgs...>, std::function<void()>, std::function<void(size_t, _ResultArgs...)>>;
-		using this_type = task_when_one<_Ttuple, _ResultArgs...>;
+		template<class... _Types>
+		struct make_any_unpack_tuple_impl
+		{
+			static std::any make(_Types&&... args)
+			{
+				return std::make_any(std::forward<_Types>(args)...);
+			}
+		};
+		template<>
+		struct make_any_unpack_tuple_impl<>
+		{
+			static std::any make()
+			{
+				return std::any{};
+			}
+		};
+		template<class _Ty>
+		struct make_any_unpack_tuple_impl<_Ty>
+		{
+			static std::any make(_Ty && val)
+			{
+				return std::make_any<typename std::remove_reference<_Ty>::type>(std::forward<_Ty>(val));
+			}
+		};
+		template<class _Ty>
+		struct make_any_unpack_tuple_impl<std::tuple<_Ty>>
+		{
+			static std::any make(std::tuple<_Ty> && val)
+			{
+				return std::make_any(std::get<0>(std::forward<std::tuple<_Ty>>(val)));
+			}
+		};
 
-		using element_type = std::tuple<size_t, _ResultArgs...>;
-		using result_type = std::tuple<size_t, _ResultArgs...>;		//本节点的结果的类型
-		using result_tuple = result_type;							//本节点的结果打包成tuple<>后的类型
-		using args_tuple_type = std::tuple<>;						//本节点的入参打包成tuple<>后的类型
+		template<class... _Types>
+		std::any make_any_unpack(_Types&&... args)
+		{
+			return make_any_unpack_tuple_impl<_Types...>::make(std::forward<_Types>(args)...);
+		}
+		template<class _Tuple, size_t... _Idx>
+		std::any make_any_unpack_tuple_2(_Tuple&& args, std::index_sequence<_Idx...>)
+		{
+			return make_any_unpack(std::get<_Idx>(std::forward<_Tuple>(args))...);
+		}
+		template<class... _Types>
+		std::any make_any_unpack_tuple(std::tuple<_Types...>&& args)
+		{
+			return make_any_unpack_tuple_2(std::forward<std::tuple<_Types...>>(args), std::make_index_sequence<sizeof...(_Types)>{});
+		}
+	}
+
+	template<class _Ttuple>
+	struct task_any_node : public node_impl<std::tuple<size_t, std::any>, std::function<void()>, std::function<void(size_t, std::any)>>
+	{
+		using base_type = node_impl<std::tuple<size_t, std::any>, std::function<void()>, std::function<void(size_t, std::any)>>;
+		using this_type = task_when_one<_Ttuple>;
+
+		using element_type = std::tuple<size_t, std::any>;
+		using result_type = std::tuple<size_t, std::any>;		//本节点的结果的类型
+		using result_tuple = result_type;					//本节点的结果打包成tuple<>后的类型
+		using args_tuple_type = std::tuple<>;				//本节点的入参打包成tuple<>后的类型
 
 		using task_tuple = detail::package_tuple_t<_Ttuple>;
 		task_tuple			_All_tasks;
 
-		using task_function = typename base_type::task_function;
-		using then_function = typename base_type::then_function;
-
 		template<class... _Tasks>
-		task_anys_node(const task_set_exception_agent_sptr & exp, _Tasks&&... ts)
+		task_any_node(const task_set_exception_agent_sptr & exp, _Tasks&&... ts)
 			: base_type(exp)
 			, _All_tasks(std::forward<_Tasks>(ts)...)
 		{
 		}
-		task_anys_node(task_anys_node && _Right) = default;
-		task_anys_node & operator = (task_anys_node && _Right) = default;
-		task_anys_node(const task_anys_node & _Right) = delete;
-		task_anys_node & operator = (const task_anys_node & _Right) = delete;
+		task_any_node(task_any_node && _Right) = default;
+		task_any_node & operator = (task_any_node && _Right) = default;
+		task_any_node(const task_any_node & _Right) = delete;
+		task_any_node & operator = (const task_any_node & _Right) = delete;
 
 	private:
 		std::atomic<bool> _Result_retrieved{ false };
@@ -52,7 +91,8 @@ namespace lib_shark_task
 			if (!_Result_retrieved)
 			{
 				_Result_retrieved = true;
-				detail::_Fill_to_tuple<0>(this->_Peek_value(), idx, std::forward<_PrevArgs2>(args)...);
+				std::get<0>(this->_Peek_value()) = idx;
+				std::get<1>(this->_Peek_value()) = detail::make_any_unpack(std::forward<_PrevArgs2>(args)...);
 			}
 		}
 		template<size_t _Idx, class _PrevTuple>
@@ -63,7 +103,7 @@ namespace lib_shark_task
 			{
 				_Result_retrieved = true;
 				std::get<0>(this->_Peek_value()) = idx;
-				detail::_Move_to_tuple<1>(this->_Peek_value(), std::forward<_PrevTuple>(args));
+				std::get<1>(this->_Peek_value()) = detail::make_any_unpack_tuple(std::forward<_PrevTuple>(args));
 			}
 		}
 
@@ -128,114 +168,5 @@ namespace lib_shark_task
 
 			return false;
 		}
-	};
-	template<class _Ttuple, class... _ResultArgs>
-	struct task_anys_node<_Ttuple, std::tuple<_ResultArgs...>> : public task_anys_node<_Ttuple, _ResultArgs...>
-	{
-		using task_anys_node<_Ttuple, _ResultArgs...>::task_anys_node;
-	};
-
-	template<class _Ttuple, class... _ResultArgs>
-	struct task_any_node : public node_impl<std::tuple<_ResultArgs...>, std::function<void()>, std::function<void(_ResultArgs...)>>
-	{
-		using this_type = task_when_one<_Ttuple, _ResultArgs...>;
-
-		using result_type = std::tuple<_ResultArgs...>;		//本节点的结果的类型
-		using result_tuple = result_type;					//本节点的结果打包成tuple<>后的类型
-		using args_tuple_type = std::tuple<>;				//本节点的入参打包成tuple<>后的类型
-
-		using task_tuple = detail::package_tuple_t<_Ttuple>;
-		task_tuple			_All_tasks;
-
-		template<class... _Tasks>
-		task_any_node(const task_set_exception_agent_sptr & exp, _Tasks&&... ts)
-			: node_impl(exp)
-			, _All_tasks(std::forward<_Tasks>(ts)...)
-			, _Result_count(std::tuple_size<_Ttuple>::value)
-		{
-		}
-		task_any_node(task_any_node && _Right) = default;
-		task_any_node & operator = (task_any_node && _Right) = default;
-		task_any_node(const task_any_node & _Right) = delete;
-		task_any_node & operator = (const task_any_node & _Right) = delete;
-
-	private:
-		std::atomic<intptr_t> _Result_count;
-	public:
-		template<size_t _Idx, class... _PrevArgs2>
-		void _Set_value_partial(size_t, _PrevArgs2&&... args)
-		{
-			std::unique_lock<std::mutex> _Lock(_Mtx());
-			detail::_Fill_to_tuple<_Idx>(_Peek_value(), std::forward<_PrevArgs2>(args)...);
-		}
-		template<size_t _Idx, class _PrevTuple>
-		void _Set_value_partial_t(size_t, _PrevTuple&& args)
-		{
-			std::unique_lock<std::mutex> _Lock(_Mtx());
-			detail::_Move_to_tuple<_Idx>(_Peek_value(), std::forward<_PrevTuple>(args));
-		}
-
-		void _On_result(size_t)
-		{
-			if (--_Result_count == 0)
-			{
-				this->_Set_value();
-				_Ready = true;
-				invoke_then_if();
-			}
-		}
-
-		template<class... Args2>
-		bool invoke_thiz(Args2&&... args)
-		{
-			static_assert(sizeof...(Args2) >= typename std::tuple_size<args_tuple_type>::value, "");
-
-			try
-			{
-				std::unique_lock<std::mutex> _Lock(_Mtx());
-				task_tuple all_task = std::move(_All_tasks);
-				_Lock.unlock();
-
-				for_each(all_task, [&](auto & ts)
-				{
-					ts(args...);
-				});
-			}
-			catch (...)
-			{
-				_Set_Agent_exception(std::current_exception());
-			}
-
-			return false;
-		}
-
-		template<class _PrevTuple>
-		bool invoke_thiz_tuple(_PrevTuple&& args)
-		{
-			static_assert(typename std::tuple_size<_PrevTuple>::value >= typename std::tuple_size<args_tuple_type>::value, "");
-
-			try
-			{
-				std::unique_lock<std::mutex> _Lock(_Mtx());
-				task_tuple all_task = std::move(_All_tasks);
-				_Lock.unlock();
-
-				for_each(all_task, [&](auto & ts)
-				{
-					std::apply(ts, args);
-				});
-			}
-			catch (...)
-			{
-				_Set_Agent_exception(std::current_exception());
-			}
-
-			return false;
-		}
-	};
-	template<class _Ttuple, class... _ResultArgs>
-	struct task_any_node<_Ttuple, std::tuple<_ResultArgs...>> : public task_any_node<_Ttuple, _ResultArgs...>
-	{
-		using task_any_node<_Ttuple, _ResultArgs...>::task_any_node;
 	};
 }

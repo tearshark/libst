@@ -124,5 +124,8 @@
     <None Include="..\include\task_when_anyv.inl">
       <Filter>libst</Filter>
     </None>
+    <None Include="..\include\task_when_anys.inl">
+      <Filter>libst</Filter>
+    </None>
   </ItemGroup>
 </Project>

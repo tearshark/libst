@@ -187,8 +187,9 @@ namespace lib_shark_task
 
 		//std::bind()
 		template<class _Fx, class... _Types>
-		struct invoke_traits<binder2_type<_Fx, _Types...> >
+		struct invoke_traits<binder2_type<_Fx, _Types...> > : public invoke_traits<typename std::remove_reference<_Fx>::type>
 		{
+/*
 			using bind_type = binder2_type<_Fx, _Types...>;
 
 			using result_type = typename bind_type::result_type;
@@ -219,6 +220,7 @@ namespace lib_shark_task
 			{
 				return f(std::forward<_Types>(args)...);
 			}
+*/
 		};
 		template<class _Fx, class... _Types>
 		struct invoke_traits<binder2_type<_Fx, _Types...> &> : public invoke_traits<binder2_type<_Fx, _Types...> >
@@ -241,8 +243,9 @@ namespace lib_shark_task
 
 		//std::bind()
 		template<class _Ret, class _Fx, class... _Types>
-		struct invoke_traits<binder_type<_Ret, _Fx, _Types...> >
+		struct invoke_traits<binder_type<_Ret, _Fx, _Types...> > : public invoke_traits<typename std::remove_reference<_Fx>::type>
 		{
+/*
 			using bind_type = binder_type<_Ret, _Fx, _Types...>;
 
 			using result_type = typename bind_type::result_type;
@@ -273,6 +276,7 @@ namespace lib_shark_task
 			{
 				return f(std::forward<_Types>(args)...);
 			}
+*/
 		};
 		template<class _Ret, class _Fx, class... _Types>
 		struct invoke_traits<binder_type<_Ret, _Fx, _Types...> &> : public invoke_traits<binder_type<_Ret, _Fx, _Types...> >

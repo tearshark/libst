@@ -7,7 +7,8 @@
 
 using namespace std::literals;
 
-static auto create_task_foo(int val)
+template<class _Ty>
+static auto create_task_foo(const _Ty & val)
 {
 	return st::make_task(st::async_context, [=]
 	{
@@ -68,8 +69,41 @@ void test_task_when_any_2()
 	std::cout << "end value is " << val << std::endl;
 }
 
+void test_task_when_any_3()
+{
+	srand((int)time(nullptr));
+
+	using namespace st;
+
+	auto t1 = create_task_foo(1);
+	auto t2 = create_task_foo(2.0f);
+	auto t3 = create_task_foo("abc"s);
+
+	auto tall = when_any(t1, t2, t3)
+		.then([](size_t idx, std::any val)
+		{
+			std::cout << "task(" << idx << ") completed. value is ";
+			if (idx == 0)
+				std::cout << std::any_cast<int>(val) << std::endl;
+			if (idx == 1)
+				std::cout << std::any_cast<float>(val) << std::endl;
+			if (idx == 2)
+				std::cout << std::any_cast<std::string>(val) << std::endl;
+
+			return idx;
+		})
+		;
+
+	tall();
+
+	auto f = tall.get_future();
+	auto val = f.get();
+	std::cout << "end index is " << val << std::endl;
+}
+
 void test_task_when_any()
 {
-	//test_task_when_any_1();
+	test_task_when_any_1();
 	test_task_when_any_2();
+	test_task_when_any_3();
 }
