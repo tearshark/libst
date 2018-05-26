@@ -1,6 +1,6 @@
 @echo off
 
-REM call %ROOT_DIR%\build-android.bat
+call %ROOT_DIR%\build-android.bat
 
 SET ROOT_DIR=%~dp0
 

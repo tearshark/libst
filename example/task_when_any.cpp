@@ -18,7 +18,7 @@ static auto create_task_foo(int val)
 	});
 }
 
-void test_task_when_any_2()
+void test_task_when_any_1()
 {
 	srand((int)time(nullptr));
 
@@ -43,7 +43,33 @@ void test_task_when_any_2()
 	std::cout << "end value is " << val << std::endl;
 }
 
+void test_task_when_any_2()
+{
+	srand((int)time(nullptr));
+
+	using namespace st;
+
+	auto t1 = create_task_foo(1);
+	auto t2 = create_task_foo(2);
+	auto t3 = create_task_foo(3);
+
+	auto tall = when_any(t1, t2, t3)
+		.then([](size_t idx, int val)
+		{
+			std::cout << "task(" << idx << ") completed. value is " << val << std::endl;
+			return val * idx;
+		})
+		;
+
+	tall();
+
+	auto f = tall.get_future();
+	auto val = f.get();
+	std::cout << "end value is " << val << std::endl;
+}
+
 void test_task_when_any()
 {
+	//test_task_when_any_1();
 	test_task_when_any_2();
 }

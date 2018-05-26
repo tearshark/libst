@@ -17,7 +17,7 @@ APP_STL := c++_static
 
 APP_CPPFLAGS := -D__GXX_EXPERIMENTAL_CXX0X__ -std=c++1y -frtti -fvisibility=hidden -fvisibility-inlines-hidden -fexceptions -Wno-error=format-security -fsigned-char -Os $(CPPFLAGS)
 
-PP_DEBUG := $(strip $(NDK_DEBUG))
+APP_DEBUG := $(strip $(NDK_DEBUG))
 ifeq ($(APP_DEBUG),1)
   APP_OPTIM := debug
 else

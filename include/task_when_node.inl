@@ -8,12 +8,14 @@ namespace lib_shark_task
 		decltype(auto) declval_task_last_node()
 		{
 			using task_type = std::decay_t<_Task>;
+			static_assert(detail::is_task<task_type>::value, "make sure '_Task' is a task");
 			return std::declval<typename task_type::last_node>();
 		}
 		template<class _Task>
 		auto declval_task_last_node_result_tuple()
 		{
 			using task_type = std::decay_t<_Task>;
+			static_assert(detail::is_task<task_type>::value, "make sure '_Task' is a task");
 			using node_type = typename task_type::last_node;
 			return std::declval<typename node_type::result_tuple>();
 		}
@@ -120,14 +122,14 @@ namespace lib_shark_task
 
 	namespace detail
 	{
-		template<class _Anode, class _Task>
-		auto when_iter_one_impl(_Anode * all_node, size_t node_idx, _Task & tf)
+		template<size_t _Idx, class _Anode, class _Task>
+		auto when_wait_one_impl(_Anode * all_node, size_t node_idx, _Task & tf)
 		{
 			using tuple_type = decltype(declval_task_last_node_result_tuple<_Task>());
 
 			using task_type = std::remove_reference_t<_Task>;
-			using element_type = typename _Anode::element_type;
-			using node_args_type = when_node_args<_Anode, element_type, 0>;
+			using result_tuple = typename _Anode::element_type;
+			using node_args_type = when_node_args<_Anode, result_tuple, _Idx>;
 
 			using next_node_type = task_when_one<node_args_type, tuple_type>;
 
@@ -143,7 +145,7 @@ namespace lib_shark_task
 		{
 			size_t idx = 0;
 			for (auto & t : c)
-				when_iter_one_impl(all_node, idx++, t);
+				when_wait_one_impl<0>(all_node, idx++, t);
 		}
 
 		template<class _Node, class _Iter>
@@ -163,5 +165,6 @@ namespace lib_shark_task
 
 			return task<first_node_type, first_node_type>{exp, st_first, st_first};
 		}
+
 	}
 }

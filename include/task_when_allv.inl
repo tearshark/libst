@@ -4,6 +4,17 @@
 
 namespace lib_shark_task
 {
+	//when_all(_Iter begin, _Iter end)
+	//适用于通过迭代子等待一组任务全部完成。
+	//因此，所有的任务的返回值必然相同，结果是std::vector<result_type>。
+	//
+	//_All_tasks 由于任务的类型相同，所以使用一个std::vector<>来保存。
+	//因此，invoke_thiz/invoke_thiz_tuple采用ranged for(std::vector<>)语法来调用_All_tasks
+	//
+	//由于返回结果相同
+	//_Set_value_partial/_Set_value_partial_t 将结果，按照idx指示放在std::vector<result_type>对应位置上。
+	//
+	//_On_result 检测所有结果已经获得，则调用invoke_then_if
 	template<class _Ttype, class _ResultArgs>
 	struct task_allv_node : public node_impl<std::vector<_ResultArgs>, std::function<void()>, std::function<void(std::vector<_ResultArgs>)>>
 	{

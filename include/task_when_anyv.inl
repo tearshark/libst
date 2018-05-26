@@ -3,6 +3,17 @@
 
 namespace lib_shark_task
 {
+	//when_any(_Iter begin, _Iter end)
+	//适用于通过迭代子等待一组任务返回任意之一。
+	//因此，所有的任务的返回值必然相同，结果是(size_t, result_type...)。
+	//
+	//_All_tasks 由于任务的类型相同，所以使用一个std::vector<>来保存。
+	//因此，invoke_thiz/invoke_thiz_tuple采用ranged for(std::vector<>)语法来调用_All_tasks
+	//
+	//由于返回结果相同
+	//_Set_value_partial/_Set_value_partial_t 将idx存到get<0>(result_type)里，其他参数放在result_type后续的参数里
+	//
+	//_On_result 检测结果已经获得，并且之前保存的get<0>(result_type)与idx相同，则调用invoke_then_if
 	template<class _Ttype, class... _ResultArgs>
 	struct task_anyv_node : public node_impl<std::tuple<size_t, _ResultArgs...>, std::function<void()>, std::function<void(size_t, _ResultArgs...)>>
 	{
@@ -132,48 +143,6 @@ namespace lib_shark_task
 			}
 
 			return false;
-		}
-
-		void invoke_then_if()
-		{
-			if (!this->_Ready)
-				return;
-
-			then_function fn = this->_Move_then();
-			if (!fn)
-				return;
-
-			try
-			{
-				detail::_Apply_then(fn, std::move(this->_Get_value()));
-			}
-			catch (...)
-			{
-				this->_Set_Agent_exception(std::current_exception());
-			}
-		}
-
-		template<class _NextFx>
-		void _Set_then_if(_NextFx && fn)
-		{
-			this->_Set_retrieved();
-
-			if (this->_Ready)
-			{
-				try
-				{
-					detail::_Apply_then2<then_function>(std::forward<_NextFx>(fn), std::move(this->_Get_value()));
-				}
-				catch (...)
-				{
-					this->_Set_Agent_exception(std::current_exception());
-				}
-			}
-			else
-			{
-				std::unique_lock<std::mutex> _Lock(this->_Mtx());
-				this->_Then = then_function{ std::forward<_NextFx>(fn) };
-			}
 		}
 	};
 	template<class _Ttuple, class... _ResultArgs>

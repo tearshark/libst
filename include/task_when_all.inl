@@ -3,12 +3,24 @@
 
 namespace lib_shark_task
 {
+	//when_all(_Task1, _Task2, ...)
+	//适用于等待一组不同类型的任务全部完成。
+	//由于返回结果类型不同，将这些任务的返回值，按照先后顺序，打包成一个std::tuple<result_type...>。
+	//
+	//_All_tasks 由于任务的类型不同，导致只能用一个std::tuple<>来保存
+	//因此，invoke_thiz/invoke_thiz_tuple采用for_each(std::tuple<>)语法来调用_All_tasks
+	//
+	//由于返回结果不同
+	//_Set_value_partial/_Set_value_partial_t 将结果，按照_Idx指示放在std::tuple<result_type...>对应位置上。
+	//
+	//_On_result 检测所有结果已经获得，则调用invoke_then_if
 	template<class _Ttuple, class... _ResultArgs>
 	struct task_all_node : public node_impl<std::tuple<_ResultArgs...>, std::function<void()>, std::function<void(_ResultArgs...)>>
 	{
 		using base_type = node_impl<std::tuple<_ResultArgs...>, std::function<void()>, std::function<void(_ResultArgs...)>>;
 		using this_type = task_all_node<_Ttuple, _ResultArgs...>;
 
+		using element_type = std::tuple<_ResultArgs...>;	//等待的节点的结果类型
 		using result_type = std::tuple<_ResultArgs...>;		//本节点的结果的类型
 		using result_tuple = result_type;					//本节点的结果打包成tuple<>后的类型
 		using args_tuple_type = std::tuple<>;				//本节点的入参打包成tuple<>后的类型

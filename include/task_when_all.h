@@ -12,28 +12,10 @@ namespace lib_shark_task
 		{
 		}
 
-		template<size_t _Idx, class _Anode, class _Task>
-		auto when_all_one_impl(_Anode * all_node, size_t node_idx, _Task & tf)
-		{
-			using tuple_type = decltype(declval_task_last_node_result_tuple<_Task>());
-
-			using task_type = std::remove_reference_t<_Task>;
-			using result_tuple = typename _Anode::result_tuple;
-			using node_args_type = when_node_args<_Anode, result_tuple, _Idx>;
-
-			using next_node_type = task_when_one<node_args_type, tuple_type>;
-
-			task_set_exception_agent_sptr exp = tf._Get_exception_agent();
-			exp->_Impl = all_node;
-
-			auto st_next = std::make_shared<next_node_type>(exp, all_node, node_idx);
-			return tf.template _Then_node<next_node_type>(st_next);
-		}
-
 		template<size_t _Idx, class _Anode, class _Task, class... _TaskRest>
 		void when_all_impl2(_Anode * all_node, size_t node_idx, _Task && tf, _TaskRest&&... rest)
 		{
-			when_all_one_impl<_Idx>(all_node, node_idx, tf);
+			when_wait_one_impl<_Idx>(all_node, node_idx, tf);
 
 			using tuple_type = decltype(declval_task_last_node_result_tuple<_Task>());
 			when_all_impl2<_Idx + std::tuple_size<tuple_type>::value>(all_node, ++node_idx, std::forward<_TaskRest>(rest)...);
