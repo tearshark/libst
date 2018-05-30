@@ -12,12 +12,12 @@ int fn_first(int val)
 }
 std::string fn_second(int val)
 {
-	log_print("second", val);
+	log_print("second ", val);
 	return "abcde"s;
 }
 std::tuple<int, std::string> fn_third(std::string str)
 {
-	log_print("third", str);
+	log_print("third ", str);
 	return std::make_tuple(2, "cdefg"s);
 }
 void fn_four(int val, std::string str)

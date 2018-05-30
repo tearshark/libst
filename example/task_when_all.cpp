@@ -6,6 +6,8 @@
 
 using namespace std::literals;
 
+//Windows : MSVC OK
+//Android : failure
 void test_task_when_all_1()
 {
 	using namespace st;

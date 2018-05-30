@@ -21,11 +21,11 @@ void test_task_when_any();
 int main()
 {
 	//test_task_link();
-	test_task_async();
+	//test_task_async();
 	//test_task_optimal_move();
-	////test_task_conflict();
+	//test_task_conflict();
 	//test_task_exception();
-	//test_task_marshal();
+	test_task_marshal();
 	//test_task_thread_safe();
 	//test_task_when_all();
 	//test_task_when_any();

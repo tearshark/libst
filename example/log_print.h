@@ -14,9 +14,10 @@ inline void __log_print_impl(std::string & str)
 	printf("%s\n", str.c_str());
 }
 #elif __ANDROID__
+#include <android/log.h>
 inline void __log_print_impl(std::string & str)
 {
-	__android_log_write("", "libtask", str.c_str());
+	__android_log_write(ANDROID_LOG_INFO, "libtask", str.c_str());
 }
 #else
 #include <iostream>
@@ -42,6 +43,10 @@ namespace lib_shark_task
 			return std::string{};
 		}
 		inline std::string to_string(const std::string & _value)
+		{
+			return _value;
+		}
+		inline std::string to_string(std::string & _value)
 		{
 			return _value;
 		}
