@@ -5,16 +5,16 @@
 namespace lib_shark_task
 {
 	//when_all(_Iter begin, _Iter end)
-	//ÊÊÓÃÓÚÍ¨¹ıµü´ú×ÓµÈ´ıÒ»×éÈÎÎñÈ«²¿Íê³É¡£
-	//Òò´Ë£¬ËùÓĞµÄÈÎÎñµÄ·µ»ØÖµ±ØÈ»ÏàÍ¬£¬½á¹ûÊÇstd::vector<result_type>¡£
+	//é€‚ç”¨äºé€šè¿‡è¿­ä»£å­ç­‰å¾…ä¸€ç»„ä»»åŠ¡å…¨éƒ¨å®Œæˆã€‚
+	//å› æ­¤ï¼Œæ‰€æœ‰çš„ä»»åŠ¡çš„è¿”å›å€¼å¿…ç„¶ç›¸åŒï¼Œç»“æœæ˜¯std::vector<result_type>ã€‚
 	//
-	//_All_tasks ÓÉÓÚÈÎÎñµÄÀàĞÍÏàÍ¬£¬ËùÒÔÊ¹ÓÃÒ»¸östd::vector<>À´±£´æ¡£
-	//Òò´Ë£¬invoke_thiz/invoke_thiz_tuple²ÉÓÃranged for(std::vector<>)Óï·¨À´µ÷ÓÃ_All_tasks
+	//_All_tasks ç”±äºä»»åŠ¡çš„ç±»å‹ç›¸åŒï¼Œæ‰€ä»¥ä½¿ç”¨ä¸€ä¸ªstd::vector<>æ¥ä¿å­˜ã€‚
+	//å› æ­¤ï¼Œinvoke_thiz/invoke_thiz_tupleé‡‡ç”¨ranged for(std::vector<>)è¯­æ³•æ¥è°ƒç”¨_All_tasks
 	//
-	//ÓÉÓÚ·µ»Ø½á¹ûÏàÍ¬
-	//_Set_value_partial/_Set_value_partial_t ½«½á¹û£¬°´ÕÕidxÖ¸Ê¾·ÅÔÚstd::vector<result_type>¶ÔÓ¦Î»ÖÃÉÏ¡£
+	//ç”±äºè¿”å›ç»“æœç›¸åŒ
+	//_Set_value_partial/_Set_value_partial_t å°†ç»“æœï¼ŒæŒ‰ç…§idxæŒ‡ç¤ºæ”¾åœ¨std::vector<result_type>å¯¹åº”ä½ç½®ä¸Šã€‚
 	//
-	//_On_result ¼ì²âËùÓĞ½á¹ûÒÑ¾­»ñµÃ£¬Ôòµ÷ÓÃinvoke_then_if
+	//_On_result æ£€æµ‹æ‰€æœ‰ç»“æœå·²ç»è·å¾—ï¼Œåˆ™è°ƒç”¨invoke_then_if
 	template<class _Ttype, class _ResultArgs>
 	struct task_allv_node : public node_impl<std::vector<_ResultArgs>, std::function<void()>, std::function<void(std::vector<_ResultArgs>)>>
 	{
@@ -22,9 +22,9 @@ namespace lib_shark_task
 		using this_type = task_allv_node<_Ttype, _ResultArgs>;
 
 		using element_type = _ResultArgs;
-		using result_type = std::vector<_ResultArgs>;				//±¾½ÚµãµÄ½á¹ûµÄÀàĞÍ
-		using result_tuple = std::tuple<result_type>;				//±¾½ÚµãµÄ½á¹û´ò°ü³Étuple<>ºóµÄÀàĞÍ
-		using args_tuple_type = std::tuple<>;						//±¾½ÚµãµÄÈë²Î´ò°ü³Étuple<>ºóµÄÀàĞÍ
+		using result_type = std::vector<_ResultArgs>;				//æœ¬èŠ‚ç‚¹çš„ç»“æœçš„ç±»å‹
+		using result_tuple = std::tuple<result_type>;				//æœ¬èŠ‚ç‚¹çš„ç»“æœæ‰“åŒ…æˆtuple<>åçš„ç±»å‹
+		using args_tuple_type = std::tuple<>;						//æœ¬èŠ‚ç‚¹çš„å…¥å‚æ‰“åŒ…æˆtuple<>åçš„ç±»å‹
 
 		using task_vector = std::vector<_Ttype>;
 		task_vector			_All_tasks;

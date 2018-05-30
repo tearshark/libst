@@ -1,20 +1,18 @@
-//²âÊÔ½«»Øµ÷½Ó¿ÚµÄº¯Êı£¬°ü×°³ÉÈÎÎñÁ´½Úµã
-#include <iostream>
-#include <string>
-
+//æµ‹è¯•å°†å›è°ƒæ¥å£çš„å‡½æ•°ï¼ŒåŒ…è£…æˆä»»åŠ¡é“¾èŠ‚ç‚¹
 #include "task.h"
 #include "task_context.h"
 #include "threadpool_context.h"
+#include "log_print.h"
 
 using namespace std::literals;
 
-//foo_callback ĞèÒªÂú×ãÒÔÏÂÒªÇó£º
-//Ò»¡¢·µ»ØÖµÃ»ÓĞÒâÒå
-//¶ş¡¢cb±ØÈ»»á±»µ÷ÓÃ£¬ÇÒÖ»µ÷ÓÃÒ»´Î¡£³ı·ÇÄÚ²¿Å×ÁËÒì³£
-//Èı¡¢cbÃ»ÓĞ·µ»ØÖµ
+//foo_callback éœ€è¦æ»¡è¶³ä»¥ä¸‹è¦æ±‚ï¼š
+//ä¸€ã€è¿”å›å€¼æ²¡æœ‰æ„ä¹‰
+//äºŒã€cbå¿…ç„¶ä¼šè¢«è°ƒç”¨ï¼Œä¸”åªè°ƒç”¨ä¸€æ¬¡ã€‚é™¤éå†…éƒ¨æŠ›äº†å¼‚å¸¸
+//ä¸‰ã€cbæ²¡æœ‰è¿”å›å€¼
 void foo_callback(int val, const std::function<void(int, std::string)> & cb, std::string str)
 {
-	std::cout << "foo_callback: " << val << " @" << std::this_thread::get_id() << std::endl;
+	log_print("foo_callback: ", val, " @", std::this_thread::get_id());
 	cb(val * 2, str);
 }
 
@@ -28,14 +26,14 @@ void test_task_marshal()
 		.marshal(pool_context, &foo_callback, std::placeholders::_2, st::_cb, std::placeholders::_3)
 		.then(async_context, [](int val, std::string str)
 		{
-			std::cout << str << val << "@" << std::this_thread::get_id() << std::endl;
+			log_print(str, val, " @", std::this_thread::get_id());
 			return val * 2;
 		})
 		;
 
-	t();		//¿ªÊ¼ÔËĞĞÈÎÎñÁ´
+	t();		//å¼€å§‹è¿è¡Œä»»åŠ¡é“¾
 
 	auto f = t.get_future();
 	auto val = f.get();
-	std::cout << "end value is " << val << "@" << std::this_thread::get_id() << std::endl;
+	log_print("end value is ", val, " @", std::this_thread::get_id());
 }

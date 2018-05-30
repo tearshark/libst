@@ -35,18 +35,18 @@ namespace lib_shark_task
 		static const size_t index = _Idx;
 	};
 
-	//_Ndone : when_node_args<>ÀàĞÍ
-	//_PrevArgs : ÉÏÒ»¸ö½ÚµãµÄ·µ»ØÖµ
-	//×îºóÒª½«_PrevArgs...ºÏ²¢µ½ when_node_args<>::cated_tuple ÀïÃæÈ¥£¬È»ºóÍ¨Öª when_node_args<>::notify_node::_On_result()
+	//_Ndone : when_node_args<>ç±»å‹
+	//_PrevArgs : ä¸Šä¸€ä¸ªèŠ‚ç‚¹çš„è¿”å›å€¼
+	//æœ€åè¦å°†_PrevArgs...åˆå¹¶åˆ° when_node_args<>::cated_tuple é‡Œé¢å»ï¼Œç„¶åé€šçŸ¥ when_node_args<>::notify_node::_On_result()
 	template<class _Ndone, class... _PrevArgs>
 	struct task_when_one : public node_impl<int, std::function<void(_PrevArgs...)>>
 	{
 		using base_type = node_impl<int, std::function<void(_PrevArgs...)>>;
 		using this_type = task_when_one<_Ndone, _PrevArgs...>;
 
-		using result_type = void;									//±¾½ÚµãµÄ½á¹ûµÄÀàĞÍ
-		using result_tuple = std::tuple<>;							//±¾½ÚµãµÄ½á¹û´ò°ü³Étuple<>ºóµÄÀàĞÍ
-		using args_tuple_type = std::tuple<_PrevArgs...>;			//±¾½ÚµãµÄÈë²Î´ò°ü³Étuple<>ºóµÄÀàĞÍ
+		using result_type = void;									//æœ¬èŠ‚ç‚¹çš„ç»“æœçš„ç±»å‹
+		using result_tuple = std::tuple<>;							//æœ¬èŠ‚ç‚¹çš„ç»“æœæ‰“åŒ…æˆtuple<>åçš„ç±»å‹
+		using args_tuple_type = std::tuple<_PrevArgs...>;			//æœ¬èŠ‚ç‚¹çš„å…¥å‚æ‰“åŒ…æˆtuple<>åçš„ç±»å‹
 
 		using notify_node = typename _Ndone::notify_node;
 		using cated_tuple = typename _Ndone::cated_tuple;

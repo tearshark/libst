@@ -1,10 +1,7 @@
-//²âÊÔget_future() ºÍ then() Ö®¼äµÄ³åÍ»µ¼ÖÂÔËĞĞÊ±µÄÒì³£
-
-#include <iostream>
-#include <string>
-
+//æµ‹è¯•get_future() å’Œ then() ä¹‹é—´çš„å†²çªå¯¼è‡´è¿è¡Œæ—¶çš„å¼‚å¸¸
 #include "task.h"
 #include "task_context.h"
+#include "log_print.h"
 
 using namespace std::literals;
 
@@ -14,27 +11,27 @@ void test_task_conflict()
 
 	auto t = make_task([]
 	{
-		std::cout << "delay run " << std::this_thread::get_id() << std::endl;
+		log_print("delay run ", std::this_thread::get_id());
 		return 1;
 	});
 
-	auto f = t.get_future();		//Ëæºó²»ÄÜÔÙthen()ÁË¡£
+	auto f = t.get_future();		//éšåä¸èƒ½å†then()äº†ã€‚
 
-	//¼ÌĞøthen(),µ¼ÖÂÒì³£
+	//ç»§ç»­then(),å¯¼è‡´å¼‚å¸¸
 	t.then(async_context, [](int val)
 	{
 		std::this_thread::sleep_for(5s);
-		std::cout << "run in another thread " << std::this_thread::get_id() << std::endl;
+		log_print("run in another thread ", std::this_thread::get_id());
 		return val;
 	});
 
 	t();
 
 #if 1
-	std::cout << "end value is " << f.get() << std::endl;
+	log_print("end value is ", f.get());
 #else
-	//Ò²¿ÉÒÔ²»È¡future£¬ÕâÑùµÈ´ıÈÎÎñ×ÔÈ»Á´×ÔÈ»½áÊø
-	std::cout << "press any key to continue." << std::endl;
+	//ä¹Ÿå¯ä»¥ä¸å–futureï¼Œè¿™æ ·ç­‰å¾…ä»»åŠ¡è‡ªç„¶é“¾è‡ªç„¶ç»“æŸ
+	log_print("press any key to continue.");
 	_getch();
 #endif
 }

@@ -4,19 +4,19 @@
 namespace lib_shark_task
 {
 #if defined(_MSC_VER)
-	//ÊµÏÖ´æÈ¡ÈÎÎñ½ÚµãµÄ½á¹û¡£
-	//´æÈ¡½á¹ûÖµ
-	//·µ»Ø¶ÔÓ¦µÄfuture¶ÔÏó
-	//Ìá¹©mutexÊµÀı
+	//å®ç°å­˜å–ä»»åŠ¡èŠ‚ç‚¹çš„ç»“æœã€‚
+	//å­˜å–ç»“æœå€¼
+	//è¿”å›å¯¹åº”çš„futureå¯¹è±¡
+	//æä¾›mutexå®ä¾‹
 	template<class _Rtype>
 	struct node_result_ : public std::enable_shared_from_this<node_result_<_Rtype>>
 							, public task_set_exception
 	{
 	protected:
-		std::_State_manager<_Rtype>		_State;						//Í¨¹ıVSµÄfutureÄÚ²¿µÄ_State_managerÀ´ÊµÏÖfuture¹¦ÄÜ¡£½ñºó¿¼ÂÇ×Ô¼º×öfuture
-		task_set_exception_agent_sptr	_Exception;					//´«µİÒì³£µÄ´úÀí½Ó¿Ú
-		std::atomic<bool>				_Ready = false;				//½á¹ûÊÇ·ñÒÑ¾­×¼±¸ºÃÁË£¬Ïß³Ì°²È«
-		bool							_Future_retrieved = false;	//ÊÇ·ñÒÑ¾­µ÷ÓÃ¹ıget_future()£¬»òÕßÒÑ¾­µ÷ÓÃ¹ı_Set_then_if
+		std::_State_manager<_Rtype>		_State;						//é€šè¿‡VSçš„futureå†…éƒ¨çš„_State_manageræ¥å®ç°futureåŠŸèƒ½ã€‚ä»Šåè€ƒè™‘è‡ªå·±åšfuture
+		task_set_exception_agent_sptr	_Exception;					//ä¼ é€’å¼‚å¸¸çš„ä»£ç†æ¥å£
+		std::atomic<bool>				_Ready = false;				//ç»“æœæ˜¯å¦å·²ç»å‡†å¤‡å¥½äº†ï¼Œçº¿ç¨‹å®‰å…¨
+		bool							_Future_retrieved = false;	//æ˜¯å¦å·²ç»è°ƒç”¨è¿‡get_future()ï¼Œæˆ–è€…å·²ç»è°ƒç”¨è¿‡_Set_then_if
 
 	public:
 		node_result_(const task_set_exception_agent_sptr & exp)
@@ -29,9 +29,9 @@ namespace lib_shark_task
 		node_result_(const node_result_ & _Right) = delete;
 		node_result_ & operator = (const node_result_ & _Right) = delete;
 		
-		//´Ëº¯ÊıÖ»Ó¦¸Ã±»µ÷ÓÃÒ»´Î¡£
-		//²¢ÇÒÍâ²¿Ã»ÓĞµ÷ÓÃ¹ı _Set_then_if()
-		//ÄÚ²¿²»ÄÜµ÷ÓÃ¹ı_Get_value()
+		//æ­¤å‡½æ•°åªåº”è¯¥è¢«è°ƒç”¨ä¸€æ¬¡ã€‚
+		//å¹¶ä¸”å¤–éƒ¨æ²¡æœ‰è°ƒç”¨è¿‡ _Set_then_if()
+		//å†…éƒ¨ä¸èƒ½è°ƒç”¨è¿‡_Get_value()
 		inline std::future<_Rtype> get_future()
 		{
 			assert(!is_retrieved());
@@ -40,13 +40,13 @@ namespace lib_shark_task
 			return (std::future<_Rtype>(_State, std::_Nil()));
 		}
 
-		//½á¹ûÊÇ·ñÒÑ¾­×¼±¸ºÃÁË£¬Ïß³Ì°²È«
+		//ç»“æœæ˜¯å¦å·²ç»å‡†å¤‡å¥½äº†ï¼Œçº¿ç¨‹å®‰å…¨
 		inline bool is_ready() const
 		{
 			return _Ready;
 		}
 
-		//ÊÇ·ñÒÑ¾­µ÷ÓÃ¹ıget_future/_Set_then_if/_Get_valueÖ®Ò»
+		//æ˜¯å¦å·²ç»è°ƒç”¨è¿‡get_future/_Set_then_if/_Get_valueä¹‹ä¸€
 		inline bool is_retrieved() const
 		{
 			std::unique_lock<std::mutex> _Lock(_Mtx());
@@ -54,7 +54,7 @@ namespace lib_shark_task
 			return _Ptr()->_Already_retrieved() || _Future_retrieved;
 		}
 	private:
-		//task_set_exception ½Ó¿ÚµÄÊµÏÖ
+		//task_set_exception æ¥å£çš„å®ç°
 		virtual void _Set_exception(std::exception_ptr && val) override
 		{
 			_Ptr()->_Set_exception(std::forward<std::exception_ptr>(val), false);
@@ -64,7 +64,7 @@ namespace lib_shark_task
 		{
 			return _State._Ptr();
 		}
-		//Éè¶¨µ÷ÓÃ¹ıget_future/_Set_then_if/_Get_valueÖ®Ò»
+		//è®¾å®šè°ƒç”¨è¿‡get_future/_Set_then_if/_Get_valueä¹‹ä¸€
 		void _Set_retrieved()
 		{
 			std::unique_lock<std::mutex> _Lock(_Mtx());
@@ -77,7 +77,7 @@ namespace lib_shark_task
 					std::make_error_code(std::future_errc::future_already_retrieved));
 			_Future_retrieved = true;
 		}
-		//»ñÈ¡´æµÄÖµ£¬Ö»ÄÜµ÷ÓÃÒ»´Î
+		//è·å–å­˜çš„å€¼ï¼Œåªèƒ½è°ƒç”¨ä¸€æ¬¡
 		inline _Rtype && _Get_value()
 		{
 			return std::move(_Ptr()->_Get_value(true));
@@ -86,7 +86,7 @@ namespace lib_shark_task
 		{
 			return _Ptr()->_Result;
 		}
-		//ÉèÖÃ´æµÄÖµ
+		//è®¾ç½®å­˜çš„å€¼
 		template<class _Ty2>
 		inline void _Set_value(_Ty2 && val)
 		{
@@ -96,12 +96,12 @@ namespace lib_shark_task
 		{
 			_Ptr()->_Set_value(false);
 		}
-		//ÉèÖÃÒì³£
+		//è®¾ç½®å¼‚å¸¸
 		inline void _Set_Agent_exception(std::exception_ptr && val)
 		{
 			_Exception->_Set_exception(std::forward<std::exception_ptr>(val));
 		}
-		//¶ÔÍâÌá¹©µÄmutexÊµÀı
+		//å¯¹å¤–æä¾›çš„mutexå®ä¾‹
 		inline std::mutex & _Mtx() const
 		{
 			return _Ptr()->_Mtx;

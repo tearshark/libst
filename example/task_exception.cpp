@@ -1,11 +1,8 @@
-//测试任务链将异常传递给future，在future::get()时获得任务链执行过程中的异常
-
-#include <iostream>
-#include <string>
-
+//娴嬭瘯浠诲姟閾惧皢寮傚父浼犻�掔粰future锛屽湪future::get()鏃惰幏寰椾换鍔￠摼鎵ц杩囩▼涓殑寮傚父
 #include "task.h"
 #include "task_context.h"
 #include "threadpool_context.h"
+#include "log_print.h"
 
 using namespace std::literals;
 
@@ -27,30 +24,30 @@ void test_task_exception()
 
 	auto t = make_task([](int val)
 	{
-		std::cout << "delay run " << std::this_thread::get_id() << std::endl;
+		log_print("delay run ", std::this_thread::get_id());
 		if (val == 0) throw std::divide_0_exception();
 		return 10 / val;
 	}).then(async_context, [](int val)
 	{
 		std::this_thread::sleep_for(1s);
-		std::cout << "run in another thread " << std::this_thread::get_id() << std::endl;
+		log_print("run in another thread ", std::this_thread::get_id());
 		if (val == 0) throw std::divide_0_exception();
 		return 10 / val;
 	});
 
-	t(0);		//5 : 正常; 20 : then()后的代码出错; 0 : make_task()后的代码出错
+	t(0);		//5 : 姝ｅ父; 20 : then()鍚庣殑浠ｇ爜鍑洪敊; 0 : make_task()鍚庣殑浠ｇ爜鍑洪敊
 
 	auto f = t.get_future();
 	try
 	{
-		std::cout << "end value is " << f.get() << std::endl;
+		log_print("end value is ", f.get());
 	}
 	catch (std::exception ex)
 	{
-		std::cout << ex.what() << std::endl;
+		log_print(ex.what());
 	}
 	catch (...)
 	{
-		std::cout << "had some exception!" << std::endl;
+		log_print("had some exception!");
 	}
 }

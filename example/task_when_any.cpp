@@ -1,9 +1,8 @@
-#include <iostream>
-#include <string>
 #include <list>
 #include <chrono>
 
 #include "libtask.h"
+#include "log_print.h"
 
 using namespace std::literals;
 
@@ -14,7 +13,7 @@ static auto create_task_foo(const _Ty & val)
 	{
 		std::this_thread::sleep_for(1ms * (rand() % 100));
 
-		std::cout << "task foo, val = " << val << std::endl;
+		log_print("task foo, val = ", val);
 		return val;
 	});
 }
@@ -32,7 +31,7 @@ void test_task_when_any_1()
 	auto tall = when_any(v.begin(), v.end())
 		.then([](size_t idx, int val)
 		{
-			std::cout << "task(" << idx << ") completed. value is " << val << std::endl;
+			log_print("task(", idx, ") completed. value is ", val);
 			return val * idx;
 		})
 		;
@@ -41,7 +40,7 @@ void test_task_when_any_1()
 
 	auto f = tall.get_future();
 	auto val = f.get();
-	std::cout << "end value is " << val << std::endl;
+	log_print("end value is ", val);
 }
 
 void test_task_when_any_2()
@@ -53,11 +52,13 @@ void test_task_when_any_2()
 	auto t1 = create_task_foo(1);
 	auto t2 = create_task_foo(2);
 	auto t3 = create_task_foo(3);
+	static_assert(std::is_same<decltype(t1), decltype(t2)>::value, "");
+	static_assert(std::is_same<decltype(t1), decltype(t3)>::value, "");
 
 	auto tall = when_any(t1, t2, t3)
 		.then([](size_t idx, int val)
 		{
-			std::cout << "task(" << idx << ") completed. value is " << val << std::endl;
+			log_print("task(", idx, ") completed. value is ", val);
 			return val * idx;
 		})
 		;
@@ -66,7 +67,7 @@ void test_task_when_any_2()
 
 	auto f = tall.get_future();
 	auto val = f.get();
-	std::cout << "end value is " << val << std::endl;
+	log_print("end value is ", val);
 }
 
 void test_task_when_any_3()
@@ -75,20 +76,22 @@ void test_task_when_any_3()
 
 	using namespace st;
 
-	auto t1 = create_task_foo(1);
-	auto t2 = create_task_foo(2.0f);
-	auto t3 = create_task_foo("abc"s);
+	task<task_node<int>, task_node<void>> t1 = create_task_foo(1);
+	task<task_node<float>, task_node<void>> t2 = create_task_foo(2.0f);
+	task<task_node<std::string>, task_node<void>> t3 = create_task_foo("abc"s);
+	static_assert(!std::is_same<decltype(t1), decltype(t2)>::value, "");
+	static_assert(!std::is_same<decltype(t1), decltype(t3)>::value, "");
+	static_assert(!std::is_same<decltype(t2), decltype(t3)>::value, "");
 
 	auto tall = when_any(t1, t2, t3)
 		.then([](size_t idx, std::any val)
 		{
-			std::cout << "task(" << idx << ") completed. value is ";
 			if (idx == 0)
-				std::cout << std::any_cast<int>(val) << std::endl;
+				log_print("task(", idx, ") completed. value is ", std::any_cast<int>(val));
 			if (idx == 1)
-				std::cout << std::any_cast<float>(val) << std::endl;
+				log_print("task(", idx, ") completed. value is ", std::any_cast<float>(val));
 			if (idx == 2)
-				std::cout << std::any_cast<std::string>(val) << std::endl;
+				log_print("task(", idx, ") completed. value is ", std::any_cast<std::string>(val));
 
 			return idx;
 		})
@@ -98,7 +101,7 @@ void test_task_when_any_3()
 
 	auto f = tall.get_future();
 	auto val = f.get();
-	std::cout << "end index is " << val << std::endl;
+	log_print("end index is ", val);
 }
 
 void test_task_when_any()

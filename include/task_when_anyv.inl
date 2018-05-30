@@ -4,16 +4,16 @@
 namespace lib_shark_task
 {
 	//when_any(_Iter begin, _Iter end)
-	//ÊÊÓÃÓÚÍ¨¹ıµü´ú×ÓµÈ´ıÒ»×éÈÎÎñ·µ»ØÈÎÒâÖ®Ò»¡£
-	//Òò´Ë£¬ËùÓĞµÄÈÎÎñµÄ·µ»ØÖµ±ØÈ»ÏàÍ¬£¬½á¹ûÊÇ(size_t, result_type...)¡£
+	//é€‚ç”¨äºé€šè¿‡è¿­ä»£å­ç­‰å¾…ä¸€ç»„ä»»åŠ¡è¿”å›ä»»æ„ä¹‹ä¸€ã€‚
+	//å› æ­¤ï¼Œæ‰€æœ‰çš„ä»»åŠ¡çš„è¿”å›å€¼å¿…ç„¶ç›¸åŒï¼Œç»“æœæ˜¯(size_t, result_type...)ã€‚
 	//
-	//_All_tasks ÓÉÓÚÈÎÎñµÄÀàĞÍÏàÍ¬£¬ËùÒÔÊ¹ÓÃÒ»¸östd::vector<>À´±£´æ¡£
-	//Òò´Ë£¬invoke_thiz/invoke_thiz_tuple²ÉÓÃranged for(std::vector<>)Óï·¨À´µ÷ÓÃ_All_tasks
+	//_All_tasks ç”±äºä»»åŠ¡çš„ç±»å‹ç›¸åŒï¼Œæ‰€ä»¥ä½¿ç”¨ä¸€ä¸ªstd::vector<>æ¥ä¿å­˜ã€‚
+	//å› æ­¤ï¼Œinvoke_thiz/invoke_thiz_tupleé‡‡ç”¨ranged for(std::vector<>)è¯­æ³•æ¥è°ƒç”¨_All_tasks
 	//
-	//ÓÉÓÚ·µ»Ø½á¹ûÏàÍ¬
-	//_Set_value_partial/_Set_value_partial_t ½«idx´æµ½get<0>(result_type)Àï£¬ÆäËû²ÎÊı·ÅÔÚresult_typeºóĞøµÄ²ÎÊıÀï
+	//ç”±äºè¿”å›ç»“æœç›¸åŒ
+	//_Set_value_partial/_Set_value_partial_t å°†idxå­˜åˆ°get<0>(result_type)é‡Œï¼Œå…¶ä»–å‚æ•°æ”¾åœ¨result_typeåç»­çš„å‚æ•°é‡Œ
 	//
-	//_On_result ¼ì²â½á¹ûÒÑ¾­»ñµÃ£¬²¢ÇÒÖ®Ç°±£´æµÄget<0>(result_type)ÓëidxÏàÍ¬£¬Ôòµ÷ÓÃinvoke_then_if
+	//_On_result æ£€æµ‹ç»“æœå·²ç»è·å¾—ï¼Œå¹¶ä¸”ä¹‹å‰ä¿å­˜çš„get<0>(result_type)ä¸idxç›¸åŒï¼Œåˆ™è°ƒç”¨invoke_then_if
 	template<class _Ttype, class... _ResultArgs>
 	struct task_anyv_node : public node_impl<std::tuple<size_t, _ResultArgs...>, std::function<void()>, std::function<void(size_t, _ResultArgs...)>>
 	{
@@ -21,9 +21,9 @@ namespace lib_shark_task
 		using this_type = task_anyv_node<_Ttype, _ResultArgs...>;
 
 		using element_type = std::tuple<size_t, _ResultArgs...>;
-		using result_type = std::tuple<size_t, _ResultArgs...>;		//±¾½ÚµãµÄ½á¹ûµÄÀàĞÍ
-		using result_tuple = result_type;							//±¾½ÚµãµÄ½á¹û´ò°ü³Étuple<>ºóµÄÀàĞÍ
-		using args_tuple_type = std::tuple<>;						//±¾½ÚµãµÄÈë²Î´ò°ü³Étuple<>ºóµÄÀàĞÍ
+		using result_type = std::tuple<size_t, _ResultArgs...>;		//æœ¬èŠ‚ç‚¹çš„ç»“æœçš„ç±»å‹
+		using result_tuple = result_type;							//æœ¬èŠ‚ç‚¹çš„ç»“æœæ‰“åŒ…æˆtuple<>åçš„ç±»å‹
+		using args_tuple_type = std::tuple<>;						//æœ¬èŠ‚ç‚¹çš„å…¥å‚æ‰“åŒ…æˆtuple<>åçš„ç±»å‹
 
 		using task_vector = std::vector<_Ttype>;
 		task_vector			_All_tasks;

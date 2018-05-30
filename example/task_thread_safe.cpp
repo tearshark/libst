@@ -1,6 +1,6 @@
-//测试任务链节点之间的数据传递和执行是线程安全的
-
+//娴嬭瘯浠诲姟閾捐妭鐐逛箣闂寸殑鏁版嵁浼犻�掑拰鎵ц鏄嚎绋嬪畨鍏ㄧ殑
 #include "task.h"
+#include "log_print.h"
 
 void test_task_thread_safe()
 {

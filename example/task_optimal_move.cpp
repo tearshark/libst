@@ -1,9 +1,7 @@
-//²âÊÔÈÎÎñÁ´ÄÚ²¿Êı¾İÔÚ´«µİ¹ı³ÌÖĞ£¬¾¡Á¿²ÉÓÃÁËÒÆ¶¯ÓïÒå(move)£¬¶ø²»ÊÇ¿½±´ÓïÒå
-#include <iostream>
-#include <string>
-
+ï»¿//æµ‹è¯•ä»»åŠ¡é“¾å†…éƒ¨æ•°æ®åœ¨ä¼ é€’è¿‡ç¨‹ä¸­ï¼Œå°½é‡é‡‡ç”¨äº†ç§»åŠ¨è¯­ä¹‰(move)ï¼Œè€Œä¸æ˜¯æ‹·è´è¯­ä¹‰
 #include "task.h"
 #include "task_context.h"
+#include "log_print.h"
 
 using namespace std::literals;
 
@@ -13,22 +11,22 @@ struct print_move
 
 	print_move() :value(0)
 	{
-		printf("0x%p default\n", this);
+		log_print(this, " default");
 	}
 	print_move(int val) :value(val)
 	{
-		printf("0x%p init %d\n", this, val);
+		log_print(this, " init ", val);
 	}
 	print_move(const print_move & _Right) :value(_Right.value)
 	{
-		printf("0x%p copy from 0x%p\n", this, &_Right);
+		log_print(this, " copy from ", &_Right);
 	}
 	print_move & operator = (const print_move & _Right)
 	{
 		if (this != &_Right)
 		{
 			value = _Right.value;
-			printf("0x%p copy assign 0x%p\n", this, &_Right);
+			log_print(this, " copy assign ", &_Right);
 		}
 		return *this;
 	}
@@ -36,7 +34,7 @@ struct print_move
 	print_move(print_move && _Right) :value(_Right.value)
 	{
 		_Right.value = 0;
-		printf("0x%p move from 0x%p\n", this, &_Right);
+		log_print(this, " move from ", &_Right);
 	}
 	print_move & operator = (print_move && _Right)
 	{
@@ -44,7 +42,7 @@ struct print_move
 		{
 			value = _Right.value;
 			_Right.value = 0;
-			printf("0x%p move assign 0x%p\n", this, &_Right);
+			log_print(this, " move assign ", &_Right);
 		}
 		return *this;
 	}
@@ -56,12 +54,12 @@ void test_task_optimal_move()
 
 	auto t = make_task([]
 	{
-		std::cout << "delay run " << std::this_thread::get_id() << std::endl;
+		log_print("delay run ", std::this_thread::get_id());
 		return print_move{ 1 };
 	}).then(async_context, [](print_move val)
 	{
 		std::this_thread::sleep_for(5s);
-		std::cout << "run in another thread " << std::this_thread::get_id() << std::endl;
+		log_print("run in another thread ", std::this_thread::get_id());
 		return val;
 	});
 
@@ -69,10 +67,10 @@ void test_task_optimal_move()
 
 #if 1
 	auto f = t.get_future();
-	std::cout << "end value is " << f.get().value << std::endl;
+	log_print("end value is ", f.get());
 #else
-	//Ò²¿ÉÒÔ²»È¡future£¬ÕâÑùµÈ´ıÈÎÎñ×ÔÈ»Á´×ÔÈ»½áÊø
-	std::cout << "press any key to continue." << std::endl;
+	//ä¹Ÿå¯ä»¥ä¸å–futureï¼Œè¿™æ ·ç­‰å¾…ä»»åŠ¡è‡ªç„¶é“¾è‡ªç„¶ç»“æŸ
+	log_print("press any key to continue.");
 	_getch();
 #endif
 }

@@ -26,16 +26,16 @@ namespace lib_shark_task
 			}
 		};
 		
-		//ÕâÊÇstd::futureµÄÂÏÉúĞÖµÜ
-		//ÓÉÓÚstd::futureÖ»ÓĞË½ÓĞµÄ´Ó__assoc_state³õÊ¼»¯µÄ¹¹Ôìº¯Êı
-		//¹ÊÓÉÂÏÉúĞÖµÜÀ´Ìá¹©¹«¿ªµÄ´Óstd::__assoc_state³õÊ¼»¯µÄ¹¹Ôìº¯Êı
-		//È»ºóÊ¹ÓÃC++µÄÁªºÏ¹¹Ôì³östd::future
+		//è¿™æ˜¯std::futureçš„å­ªç”Ÿå…„å¼Ÿ
+		//ç”±äºstd::futureåªæœ‰ç§æœ‰çš„ä»__assoc_stateåˆå§‹åŒ–çš„æ„é€ å‡½æ•°
+		//æ•…ç”±å­ªç”Ÿå…„å¼Ÿæ¥æä¾›å…¬å¼€çš„ä»std::__assoc_stateåˆå§‹åŒ–çš„æ„é€ å‡½æ•°
+		//ç„¶åä½¿ç”¨C++çš„è”åˆæ„é€ å‡ºstd::future
 		template<class _Rp>
 		struct future_twin
 		{
 			std::__assoc_state<_Rp>* __state_;
 
-			//±£³Ö¸ústd::futureµÄ¹¹Ôìº¯ÊıĞĞÎªÒ»ÖÂ
+			//ä¿æŒè·Ÿstd::futureçš„æ„é€ å‡½æ•°è¡Œä¸ºä¸€è‡´
 			explicit future_twin(std::__assoc_state<_Rp>* __state)
 				: __state_(__state)
 			{
@@ -48,11 +48,11 @@ namespace lib_shark_task
 			}
 		};
 
-		//Ê¹ÓÃC++µÄÁªºÏÀ´ºÚ¿Ístd::futureµÄ¹¹Ôìº¯Êı
+		//ä½¿ç”¨C++çš„è”åˆæ¥é»‘å®¢std::futureçš„æ„é€ å‡½æ•°
 		template<class _Rp>
 		union future_hack
 		{
-			//±£Ö¤future_twinÓëstd::futureµÄ³ß´çÒ»ÖÂ£¬ÕâÑùÀ´±£Ö¤Æä¶ş½øÖÆÊı¾İÒ»ÖÂ
+			//ä¿è¯future_twinä¸std::futureçš„å°ºå¯¸ä¸€è‡´ï¼Œè¿™æ ·æ¥ä¿è¯å…¶äºŒè¿›åˆ¶æ•°æ®ä¸€è‡´
 			static_assert(sizeof(std::future<_Rp>) == sizeof(future_twin<_Rp>), "");
 
 			std::future<_Rp>		__f_stl;
@@ -67,7 +67,7 @@ namespace lib_shark_task
 				__f_stl.~future();
 			}
 
-			//½«¹¹ÔìµÃµ½µÄstd::futureÒÆ¶¯³öÈ¥¡£Ê£ÏÂµÄ¾ÍÊÇÎŞÓÃµÄÊı¾İÁË£¬°®Õ¦Õ¦µØ
+			//å°†æ„é€ å¾—åˆ°çš„std::futureç§»åŠ¨å‡ºå»ã€‚å‰©ä¸‹çš„å°±æ˜¯æ— ç”¨çš„æ•°æ®äº†ï¼Œçˆ±å’‹å’‹åœ°
 			std::future<_Rp> move()
 			{
 				return std::move(__f_stl);
@@ -75,18 +75,18 @@ namespace lib_shark_task
 		};
 	}
 
-	//ÊµÏÖ´æÈ¡ÈÎÎñ½ÚµãµÄ½á¹û¡£
-	//´æÈ¡½á¹ûÖµ
-	//·µ»Ø¶ÔÓ¦µÄfuture¶ÔÏó
-	//Ìá¹©mutexÊµÀı
+	//å®ç°å­˜å–ä»»åŠ¡èŠ‚ç‚¹çš„ç»“æœã€‚
+	//å­˜å–ç»“æœå€¼
+	//è¿”å›å¯¹åº”çš„futureå¯¹è±¡
+	//æä¾›mutexå®ä¾‹
 	template<class _Rtype>
 	struct node_result_ : public std::enable_shared_from_this<node_result_<_Rtype>>
 							, public task_set_exception
 	{
 	protected:
-		detail::__assoc_state_hack<_Rtype>*	_State;					//Í¨¹ıclangµÄfutureÄÚ²¿µÄ__assoc_stateÀ´ÊµÏÖfuture¹¦ÄÜ¡£½ñºó¿¼ÂÇ×Ô¼º×öfuture
-		task_set_exception_agent_sptr	_Exception;					//´«µİÒì³£µÄ´úÀí½Ó¿Ú
-		std::atomic<bool>				_Ready{ false };			//½á¹ûÊÇ·ñÒÑ¾­×¼±¸ºÃÁË£¬Ïß³Ì°²È«
+		detail::__assoc_state_hack<_Rtype>*	_State;					//é€šè¿‡clangçš„futureå†…éƒ¨çš„__assoc_stateæ¥å®ç°futureåŠŸèƒ½ã€‚ä»Šåè€ƒè™‘è‡ªå·±åšfuture
+		task_set_exception_agent_sptr	_Exception;					//ä¼ é€’å¼‚å¸¸çš„ä»£ç†æ¥å£
+		std::atomic<bool>				_Ready{ false };			//ç»“æœæ˜¯å¦å·²ç»å‡†å¤‡å¥½äº†ï¼Œçº¿ç¨‹å®‰å…¨
 
 	public:
 		node_result_(const task_set_exception_agent_sptr & exp)
@@ -104,9 +104,9 @@ namespace lib_shark_task
 		node_result_(const node_result_ & _Right) = delete;
 		node_result_ & operator = (const node_result_ & _Right) = delete;
 		
-		//´Ëº¯ÊıÖ»Ó¦¸Ã±»µ÷ÓÃÒ»´Î¡£
-		//²¢ÇÒÍâ²¿Ã»ÓĞµ÷ÓÃ¹ı _Set_then_if()
-		//ÄÚ²¿²»ÄÜµ÷ÓÃ¹ı_Get_value()
+		//æ­¤å‡½æ•°åªåº”è¯¥è¢«è°ƒç”¨ä¸€æ¬¡ã€‚
+		//å¹¶ä¸”å¤–éƒ¨æ²¡æœ‰è°ƒç”¨è¿‡ _Set_then_if()
+		//å†…éƒ¨ä¸èƒ½è°ƒç”¨è¿‡_Get_value()
 		inline std::future<_Rtype> get_future()
 		{
 			assert(!is_retrieved());
@@ -115,19 +115,19 @@ namespace lib_shark_task
 			return f.move();
 		}
 
-		//½á¹ûÊÇ·ñÒÑ¾­×¼±¸ºÃÁË£¬Ïß³Ì°²È«
+		//ç»“æœæ˜¯å¦å·²ç»å‡†å¤‡å¥½äº†ï¼Œçº¿ç¨‹å®‰å…¨
 		inline bool is_ready() const
 		{
 			return _Ready;
 		}
 
-		//ÊÇ·ñÒÑ¾­µ÷ÓÃ¹ıget_future/_Set_then_if/_Get_valueÖ®Ò»
+		//æ˜¯å¦å·²ç»è°ƒç”¨è¿‡get_future/_Set_then_if/_Get_valueä¹‹ä¸€
 		inline bool is_retrieved() const
 		{
 			return _State->__has_future_attached();
 		}
 	private:
-		//task_set_exception ½Ó¿ÚµÄÊµÏÖ
+		//task_set_exception æ¥å£çš„å®ç°
 		virtual void _Set_exception(std::exception_ptr && val) override
 		{
 			_State->set_exception(std::forward<std::exception_ptr>(val));
@@ -137,14 +137,14 @@ namespace lib_shark_task
 		{
 			return _State;
 		}
-		//Éè¶¨µ÷ÓÃ¹ıget_future/_Set_then_if/_Get_valueÖ®Ò»
+		//è®¾å®šè°ƒç”¨è¿‡get_future/_Set_then_if/_Get_valueä¹‹ä¸€
 		void _Set_retrieved()
 		{
 			if (_State->__has_future_attached())
 				throw std::future_error(std::make_error_code(std::future_errc::no_state));
 			_State->__set_future_attached();
 		}
-		//»ñÈ¡´æµÄÖµ£¬Ö»ÄÜµ÷ÓÃÒ»´Î
+		//è·å–å­˜çš„å€¼ï¼Œåªèƒ½è°ƒç”¨ä¸€æ¬¡
 		inline _Rtype _Get_value()
 		{
 			return _State->_Get_value();
@@ -153,7 +153,7 @@ namespace lib_shark_task
 		{
 			return _State->_Peek_value();
 		}
-		//ÉèÖÃ´æµÄÖµ
+		//è®¾ç½®å­˜çš„å€¼
 		template<class _Ty2>
 		inline void _Set_value(_Ty2 && val)
 		{
@@ -163,12 +163,12 @@ namespace lib_shark_task
 		{
 			_State->__assoc_sub_state::set_value();
 		}
-		//ÉèÖÃÒì³£
+		//è®¾ç½®å¼‚å¸¸
 		inline void _Set_Agent_exception(std::exception_ptr && val)
 		{
 			_Exception->_Set_exception(std::forward<std::exception_ptr>(val));
 		}
-		//¶ÔÍâÌá¹©µÄmutexÊµÀı
+		//å¯¹å¤–æä¾›çš„mutexå®ä¾‹
 		inline std::mutex & _Mtx() const
 		{
 			return _State->_Mtx();

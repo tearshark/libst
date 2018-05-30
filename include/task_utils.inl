@@ -29,7 +29,7 @@ namespace std
 	{
 		(void)initializer_list<int>{ (f(get<Idx>(t)), 0)...};
 	}
-	//±éÀútupleÀïµÄËùÓĞÔªËØ
+	//éå†tupleé‡Œçš„æ‰€æœ‰å…ƒç´ 
 	template<typename _Tp, typename _Fx>
 	inline void for_each(_Tp && t, const _Fx& f)
 	{

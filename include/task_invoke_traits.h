@@ -7,22 +7,22 @@ namespace lib_shark_task
 		template<class _Ty>
 		struct invoke_traits;
 
-		//º¯Êı_Ret(_Args...)µÄÌØÕ÷
+		//å‡½æ•°_Ret(_Args...)çš„ç‰¹å¾
 		template<class _Ret, class... _Args>
 		struct native_invoke_traits
 		{
-			using result_type = _Ret;							//·µ»ØÖµ
-			using type = _Ret(_Args...);						//º¯ÊıÀàĞÍ
-			using args_tuple_type = std::tuple<_Args...>;		//½«º¯Êı²Î×÷°ü×°³ÉtupleµÄÀàĞÍ
-			using std_function_type = std::function<type>;		//¶ÔÓ¦µÄstd::function<>Àà
+			using result_type = _Ret;							//è¿”å›å€¼
+			using type = _Ret(_Args...);						//å‡½æ•°ç±»å‹
+			using args_tuple_type = std::tuple<_Args...>;		//å°†å‡½æ•°å‚ä½œåŒ…è£…æˆtupleçš„ç±»å‹
+			using std_function_type = std::function<type>;		//å¯¹åº”çš„std::function<>ç±»
 
-			using funptr_type = std::true_type;					//ÊÇº¯ÊıÖ¸Õë
-			using memfun_type = std::false_type;				//²»ÊÇ³ÉÔ±º¯Êı
-			using functor_type = std::false_type;				//²»ÊÇ·Âº¯Êı
+			using funptr_type = std::true_type;					//æ˜¯å‡½æ•°æŒ‡é’ˆ
+			using memfun_type = std::false_type;				//ä¸æ˜¯æˆå‘˜å‡½æ•°
+			using functor_type = std::false_type;				//ä¸æ˜¯ä»¿å‡½æ•°
 
-			enum { args_size = sizeof...(_Args) };				//º¯Êı²ÎÊı¸öÊı
+			enum { args_size = sizeof...(_Args) };				//å‡½æ•°å‚æ•°ä¸ªæ•°
 
-			//Í¨¹ıÖ¸¶¨µÄË÷Òı»ñÈ¡º¯Êı²ÎÊıµÄÀàĞÍ
+			//é€šè¿‡æŒ‡å®šçš„ç´¢å¼•è·å–å‡½æ•°å‚æ•°çš„ç±»å‹
 			template<size_t _Idx>
 			struct args_element
 			{
@@ -30,7 +30,7 @@ namespace lib_shark_task
 				using type = typename std::tuple_element<_Idx, args_tuple_type>::type;
 			};
 
-			//µ÷ÓÃ´ËÀàº¯ÊıµÄ¸¨Öú·½·¨
+			//è°ƒç”¨æ­¤ç±»å‡½æ•°çš„è¾…åŠ©æ–¹æ³•
 			template<class _Fx, class... _Rest>
 			static inline _Ret Invoke_(const _Fx & f, _Args&&... args, _Rest...)
 			{
@@ -38,13 +38,13 @@ namespace lib_shark_task
 			}
 		};
 
-		//ÆÕÍ¨º¯Êı.
+		//æ™®é€šå‡½æ•°.
 		template<class _Ret, class... _Args>
 		struct invoke_traits<_Ret(_Args...)> : public native_invoke_traits<_Ret, _Args...>
 		{
 		};
 		
-		//º¯ÊıÖ¸Õë.
+		//å‡½æ•°æŒ‡é’ˆ.
 		template<class _Ret, class... _Args>
 		struct invoke_traits<_Ret(*)(_Args...)> : public native_invoke_traits<_Ret, _Args...>
 		{
@@ -65,7 +65,7 @@ namespace lib_shark_task
 		};
 
 
-		//³ÉÔ±º¯Êı£¬ÆÕÍ¨°æ±¾
+		//æˆå‘˜å‡½æ•°ï¼Œæ™®é€šç‰ˆæœ¬
 		template<class _Ret, class _Ctype, class... _Args>
 		struct invoke_traits<_Ret(_Ctype::*)(_Args...)> : public native_invoke_traits<_Ret, _Args...>
 		{
@@ -81,7 +81,7 @@ namespace lib_shark_task
 			}
 		};
 
-		//³ÉÔ±º¯Êı£¬const°æ±¾
+		//æˆå‘˜å‡½æ•°ï¼Œconstç‰ˆæœ¬
 		template<class _Ret, class _Ctype, class... _Args>
 		struct invoke_traits<_Ret(_Ctype::*)(_Args...) const> : public native_invoke_traits<_Ret, _Args...>
 		{
@@ -97,7 +97,7 @@ namespace lib_shark_task
 			}
 		};
 
-		//³ÉÔ±º¯Êı£¬volatile°æ±¾
+		//æˆå‘˜å‡½æ•°ï¼Œvolatileç‰ˆæœ¬
 		template<class _Ret, class _Ctype, class... _Args>
 		struct invoke_traits<_Ret(_Ctype::*)(_Args...) volatile> : public native_invoke_traits<_Ret, _Args...>
 		{
@@ -113,7 +113,7 @@ namespace lib_shark_task
 			}
 		};
 
-		//³ÉÔ±º¯Êı£¬const volatile°æ±¾
+		//æˆå‘˜å‡½æ•°ï¼Œconst volatileç‰ˆæœ¬
 		template<class _Ret, class _Ctype, class... _Args>
 		struct invoke_traits<_Ret(_Ctype::*)(_Args...) const volatile> : public native_invoke_traits<_Ret, _Args...>
 		{
@@ -129,7 +129,7 @@ namespace lib_shark_task
 			}
 		};
 
-		//º¯Êı¶ÔÏó.
+		//å‡½æ•°å¯¹è±¡.
 		template<class _Tobj>
 		struct invoke_traits
 		{
@@ -194,19 +194,19 @@ namespace lib_shark_task
 
 			using result_type = typename bind_type::result_type;
 			using type = result_type(_Types...);
-			using args_tuple_type = std::tuple<_Types...>;		//½«º¯Êı²Î×÷°ü×°³ÉtupleµÄÀàĞÍ
-			using std_function_type = std::function<type>;		//¶ÔÓ¦µÄstd::function<>Àà
+			using args_tuple_type = std::tuple<_Types...>;		//å°†å‡½æ•°å‚ä½œåŒ…è£…æˆtupleçš„ç±»å‹
+			using std_function_type = std::function<type>;		//å¯¹åº”çš„std::function<>ç±»
 
-			using funptr_type = std::false_type;				//²»ÊÇº¯ÊıÖ¸Õë
-			using memfun_type = std::false_type;				//²»ÊÇ³ÉÔ±º¯Êı
-			using functor_type = std::true_type;				//ÊÇ·Âº¯Êı
+			using funptr_type = std::false_type;				//ä¸æ˜¯å‡½æ•°æŒ‡é’ˆ
+			using memfun_type = std::false_type;				//ä¸æ˜¯æˆå‘˜å‡½æ•°
+			using functor_type = std::true_type;				//æ˜¯ä»¿å‡½æ•°
 
 			using callee_type = bind_type;
 			using this_args_type = bind_type;
 
-			enum { args_size = sizeof...(_Types) };				//º¯Êı²ÎÊı¸öÊı
+			enum { args_size = sizeof...(_Types) };				//å‡½æ•°å‚æ•°ä¸ªæ•°
 
-																//Í¨¹ıÖ¸¶¨µÄË÷Òı»ñÈ¡º¯Êı²ÎÊıµÄÀàĞÍ
+																//é€šè¿‡æŒ‡å®šçš„ç´¢å¼•è·å–å‡½æ•°å‚æ•°çš„ç±»å‹
 			template<size_t _Idx>
 			struct args_element
 			{
@@ -214,7 +214,7 @@ namespace lib_shark_task
 				using type = typename std::tuple_element<_Idx, args_tuple_type>::type;
 			};
 
-			//µ÷ÓÃ´ËÀàº¯ÊıµÄ¸¨Öú·½·¨
+			//è°ƒç”¨æ­¤ç±»å‡½æ•°çš„è¾…åŠ©æ–¹æ³•
 			template<class _Fx2, class... _Rest>
 			static inline  decltype(auto) Invoke_(const _Fx2 & f, _Types&&... args, _Rest...)
 			{
@@ -250,19 +250,19 @@ namespace lib_shark_task
 
 			using result_type = typename bind_type::result_type;
 			using type = result_type(_Types...);
-			using args_tuple_type = std::tuple<_Types...>;		//½«º¯Êı²Î×÷°ü×°³ÉtupleµÄÀàĞÍ
-			using std_function_type = std::function<type>;		//¶ÔÓ¦µÄstd::function<>Àà
+			using args_tuple_type = std::tuple<_Types...>;		//å°†å‡½æ•°å‚ä½œåŒ…è£…æˆtupleçš„ç±»å‹
+			using std_function_type = std::function<type>;		//å¯¹åº”çš„std::function<>ç±»
 
-			using funptr_type = std::false_type;				//²»ÊÇº¯ÊıÖ¸Õë
-			using memfun_type = std::false_type;				//²»ÊÇ³ÉÔ±º¯Êı
-			using functor_type = std::true_type;				//ÊÇ·Âº¯Êı
+			using funptr_type = std::false_type;				//ä¸æ˜¯å‡½æ•°æŒ‡é’ˆ
+			using memfun_type = std::false_type;				//ä¸æ˜¯æˆå‘˜å‡½æ•°
+			using functor_type = std::true_type;				//æ˜¯ä»¿å‡½æ•°
 
 			using callee_type = bind_type;
 			using this_args_type = bind_type;
 
-			enum { args_size = sizeof...(_Types) };				//º¯Êı²ÎÊı¸öÊı
+			enum { args_size = sizeof...(_Types) };				//å‡½æ•°å‚æ•°ä¸ªæ•°
 			
-			//Í¨¹ıÖ¸¶¨µÄË÷Òı»ñÈ¡º¯Êı²ÎÊıµÄÀàĞÍ
+			//é€šè¿‡æŒ‡å®šçš„ç´¢å¼•è·å–å‡½æ•°å‚æ•°çš„ç±»å‹
 			template<size_t _Idx>
 			struct args_element
 			{
@@ -270,7 +270,7 @@ namespace lib_shark_task
 				using type = typename std::tuple_element<_Idx, args_tuple_type>::type;
 			};
 
-			//µ÷ÓÃ´ËÀàº¯ÊıµÄ¸¨Öú·½·¨
+			//è°ƒç”¨æ­¤ç±»å‡½æ•°çš„è¾…åŠ©æ–¹æ³•
 			template<class _Fx2, class... _Rest>
 			static inline  decltype(auto) Invoke_(const _Fx2 & f, _Types&&... args, _Rest...)
 			{

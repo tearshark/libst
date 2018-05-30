@@ -63,9 +63,9 @@ namespace lib_shark_task
 		using this_type = task_when_one<_Ttuple>;
 
 		using element_type = std::tuple<size_t, std::any>;
-		using result_type = std::tuple<size_t, std::any>;		//±¾½ÚµãµÄ½á¹ûµÄÀàĞÍ
-		using result_tuple = result_type;					//±¾½ÚµãµÄ½á¹û´ò°ü³Étuple<>ºóµÄÀàĞÍ
-		using args_tuple_type = std::tuple<>;				//±¾½ÚµãµÄÈë²Î´ò°ü³Étuple<>ºóµÄÀàĞÍ
+		using result_type = std::tuple<size_t, std::any>;		//æœ¬èŠ‚ç‚¹çš„ç»“æœçš„ç±»å‹
+		using result_tuple = result_type;					//æœ¬èŠ‚ç‚¹çš„ç»“æœæ‰“åŒ…æˆtuple<>åçš„ç±»å‹
+		using args_tuple_type = std::tuple<>;				//æœ¬èŠ‚ç‚¹çš„å…¥å‚æ‰“åŒ…æˆtuple<>åçš„ç±»å‹
 
 		using task_tuple = detail::package_tuple_t<_Ttuple>;
 		task_tuple			_All_tasks;

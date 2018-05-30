@@ -1,9 +1,9 @@
-//½«Ò»¸öÒÑÓĞµÄcallback°ü×°³ÉÈÎÎñÁ´
-//µäĞÍµÄ£¬Ò»¸öcallbackµ÷ÓÃÊÇ£º
+//å°†ä¸€ä¸ªå·²æœ‰çš„callbackåŒ…è£…æˆä»»åŠ¡é“¾
+//å…¸å‹çš„ï¼Œä¸€ä¸ªcallbackè°ƒç”¨æ˜¯ï¼š
 //	foo(..., cb)
-//ÆäÖĞ
+//å…¶ä¸­
 //	cb = void(args)
-//Òª°ü×°³É
+//è¦åŒ…è£…æˆ
 //	tuple<args> foo2(...)
 #pragma once
 
@@ -43,7 +43,7 @@ namespace lib_shark_task
 			static const size_t index = sizeof...(_Holders) + 1;
 		};
 
-		//_Holders...ÀïÃæÖÁÉÙÓĞÒ»¸öÀàĞÍÊÇstd::placeholders::_1£¬»ñµÃ_1ÔÚ_HoldersµÄµÚ¼¸¸öÉÏ
+		//_Holders...é‡Œé¢è‡³å°‘æœ‰ä¸€ä¸ªç±»å‹æ˜¯std::placeholders::_1ï¼Œè·å¾—_1åœ¨_Holdersçš„ç¬¬å‡ ä¸ªä¸Š
 		template<class... _Holders>
 		struct get_holder_index
 		{
@@ -58,7 +58,7 @@ namespace lib_shark_task
 		//static_assert(get_holder_index<int, placeholder_type, placeholder_type>::index == 1, "place holder in 1");
 		////static_assert(get_holder_index<int, int, std::string>::index == 3, "static_assert cause failed");
 
-		//ÉúÔìÒ»¸ö¼æÈİ»Øµ÷²ÎÊıµÄº¯Êı¶ÔÏó¡£½«Õâ¸öº¯Êı¶ÔÏó¸ø»Øµ÷º¯Êı
+		//ç”Ÿé€ ä¸€ä¸ªå…¼å®¹å›è°ƒå‚æ•°çš„å‡½æ•°å¯¹è±¡ã€‚å°†è¿™ä¸ªå‡½æ•°å¯¹è±¡ç»™å›è°ƒå‡½æ•°
 		template<class _Stype, class _Fx>
 		struct callback_relay;
 
@@ -88,17 +88,17 @@ namespace lib_shark_task
 		};
 	}
 
-	//°ü×°»Øµ÷ÎªÈÎÎñ½Úµã
-	//_Cbtype»Øµ÷²ÎÊıµÄÀàĞÍ¡£»Øµ÷²ÎÊıÊÇÒ»¸öº¯Êı(¶ÔÏó)£¬ÆäÈë²Î×÷Îª±¾ÈÎÎñ½ÚµãµÄ·µ»ØÖµ
-	//_PrevArgs...ÊÇÉÏÒ»¸öÈÎÎñ½ÚµãµÄ·µ»ØÖµ(Èç¹ûÉÏÒ»¸ö½Úµã·µ»ØÖµÊÇstd::tuple<>£¬Ôò_PrevArgsÊÇ½«tuple½Ó°üºóµÄ²ÎÊıÁĞ±í)
+	//åŒ…è£…å›è°ƒä¸ºä»»åŠ¡èŠ‚ç‚¹
+	//_Cbtypeå›è°ƒå‚æ•°çš„ç±»å‹ã€‚å›è°ƒå‚æ•°æ˜¯ä¸€ä¸ªå‡½æ•°(å¯¹è±¡)ï¼Œå…¶å…¥å‚ä½œä¸ºæœ¬ä»»åŠ¡èŠ‚ç‚¹çš„è¿”å›å€¼
+	//_PrevArgs...æ˜¯ä¸Šä¸€ä¸ªä»»åŠ¡èŠ‚ç‚¹çš„è¿”å›å€¼(å¦‚æœä¸Šä¸€ä¸ªèŠ‚ç‚¹è¿”å›å€¼æ˜¯std::tuple<>ï¼Œåˆ™_PrevArgsæ˜¯å°†tupleæ¥åŒ…åçš„å‚æ•°åˆ—è¡¨)
 	template<class _Cbtype, class... _PrevArgs>
 	struct task_cbnode : public node_result_<detail::args_tuple_t<_Cbtype>>
 	{
 		using this_type = task_cbnode<_Cbtype, _PrevArgs...>;
 
-		using result_type = detail::args_tuple_t<_Cbtype>;			//±¾½ÚµãµÄ½á¹ûµÄÀàĞÍ
-		using result_tuple = result_type;							//±¾½ÚµãµÄ½á¹û´ò°ü³Étuple<>ºóµÄÀàĞÍ
-		using args_tuple_type = std::tuple<_PrevArgs...>;			//±¾½ÚµãµÄÈë²Î´ò°ü³Étuple<>ºóµÄÀàĞÍ
+		using result_type = detail::args_tuple_t<_Cbtype>;			//æœ¬èŠ‚ç‚¹çš„ç»“æœçš„ç±»å‹
+		using result_tuple = result_type;							//æœ¬èŠ‚ç‚¹çš„ç»“æœæ‰“åŒ…æˆtuple<>åçš„ç±»å‹
+		using args_tuple_type = std::tuple<_PrevArgs...>;			//æœ¬èŠ‚ç‚¹çš„å…¥å‚æ‰“åŒ…æˆtuple<>åçš„ç±»å‹
 
 		using base_type = node_result_<detail::args_tuple_t<_Cbtype>>;
 
@@ -213,19 +213,19 @@ namespace lib_shark_task
 		using task_function = std::function<void(relay_type &&, _PrevArgs...)>;
 		using then_function = detail::unpack_tuple_fn_t<void, result_type>;
 	protected:
-		task_function			_Thiz;			//Ö´ĞĞµ±Ç°ÈÎÎñ½Úµã
-		then_function			_Then;			//Ö´ĞĞÏÂÒ»¸öÈÎÎñ½Úµã
-												//È¡Ö´ĞĞµ±Ç°ÈÎÎñ½ÚµãµÄº¯Êı£¬Ö»ÄÜÈ¡Ò»´Î¡£Ïß³Ì°²È«
+		task_function			_Thiz;			//æ‰§è¡Œå½“å‰ä»»åŠ¡èŠ‚ç‚¹
+		then_function			_Then;			//æ‰§è¡Œä¸‹ä¸€ä¸ªä»»åŠ¡èŠ‚ç‚¹
+												//å–æ‰§è¡Œå½“å‰ä»»åŠ¡èŠ‚ç‚¹çš„å‡½æ•°ï¼Œåªèƒ½å–ä¸€æ¬¡ã€‚çº¿ç¨‹å®‰å…¨
 		inline task_function _Move_thiz()
 		{
 			std::unique_lock<std::mutex> _Lock(this->_Mtx());
-			return std::move(_Thiz);			//Ç¿ÆÈÖ»ÄÜµ÷ÓÃÒ»´Î
+			return std::move(_Thiz);			//å¼ºè¿«åªèƒ½è°ƒç”¨ä¸€æ¬¡
 		}
-		//È¡Ö´ĞĞÏÂÒ»¸öÈÎÎñ½ÚµãµÄº¯Êı£¬Ö»ÄÜÈ¡Ò»´Î¡£Ïß³Ì°²È«
+		//å–æ‰§è¡Œä¸‹ä¸€ä¸ªä»»åŠ¡èŠ‚ç‚¹çš„å‡½æ•°ï¼Œåªèƒ½å–ä¸€æ¬¡ã€‚çº¿ç¨‹å®‰å…¨
 		inline then_function _Move_then()
 		{
 			std::unique_lock<std::mutex> _Lock(this->_Mtx());
-			return std::move(_Then);			//Ç¿ÆÈÖ»ÄÜµ÷ÓÃÒ»´Î
+			return std::move(_Then);			//å¼ºè¿«åªèƒ½è°ƒç”¨ä¸€æ¬¡
 		}
 	};
 

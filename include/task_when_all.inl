@@ -4,26 +4,26 @@
 namespace lib_shark_task
 {
 	//when_all(_Task1, _Task2, ...)
-	//ÊÊÓÃÓÚµÈ´ıÒ»×é²»Í¬ÀàĞÍµÄÈÎÎñÈ«²¿Íê³É¡£
-	//ÓÉÓÚ·µ»Ø½á¹ûÀàĞÍ²»Í¬£¬½«ÕâĞ©ÈÎÎñµÄ·µ»ØÖµ£¬°´ÕÕÏÈºóË³Ğò£¬´ò°ü³ÉÒ»¸östd::tuple<result_type...>¡£
+	//é€‚ç”¨äºç­‰å¾…ä¸€ç»„ä¸åŒç±»å‹çš„ä»»åŠ¡å…¨éƒ¨å®Œæˆã€‚
+	//ç”±äºè¿”å›ç»“æœç±»å‹ä¸åŒï¼Œå°†è¿™äº›ä»»åŠ¡çš„è¿”å›å€¼ï¼ŒæŒ‰ç…§å…ˆåé¡ºåºï¼Œæ‰“åŒ…æˆä¸€ä¸ªstd::tuple<result_type...>ã€‚
 	//
-	//_All_tasks ÓÉÓÚÈÎÎñµÄÀàĞÍ²»Í¬£¬µ¼ÖÂÖ»ÄÜÓÃÒ»¸östd::tuple<>À´±£´æ
-	//Òò´Ë£¬invoke_thiz/invoke_thiz_tuple²ÉÓÃfor_each(std::tuple<>)Óï·¨À´µ÷ÓÃ_All_tasks
+	//_All_tasks ç”±äºä»»åŠ¡çš„ç±»å‹ä¸åŒï¼Œå¯¼è‡´åªèƒ½ç”¨ä¸€ä¸ªstd::tuple<>æ¥ä¿å­˜
+	//å› æ­¤ï¼Œinvoke_thiz/invoke_thiz_tupleé‡‡ç”¨for_each(std::tuple<>)è¯­æ³•æ¥è°ƒç”¨_All_tasks
 	//
-	//ÓÉÓÚ·µ»Ø½á¹û²»Í¬
-	//_Set_value_partial/_Set_value_partial_t ½«½á¹û£¬°´ÕÕ_IdxÖ¸Ê¾·ÅÔÚstd::tuple<result_type...>¶ÔÓ¦Î»ÖÃÉÏ¡£
+	//ç”±äºè¿”å›ç»“æœä¸åŒ
+	//_Set_value_partial/_Set_value_partial_t å°†ç»“æœï¼ŒæŒ‰ç…§_IdxæŒ‡ç¤ºæ”¾åœ¨std::tuple<result_type...>å¯¹åº”ä½ç½®ä¸Šã€‚
 	//
-	//_On_result ¼ì²âËùÓĞ½á¹ûÒÑ¾­»ñµÃ£¬Ôòµ÷ÓÃinvoke_then_if
+	//_On_result æ£€æµ‹æ‰€æœ‰ç»“æœå·²ç»è·å¾—ï¼Œåˆ™è°ƒç”¨invoke_then_if
 	template<class _Ttuple, class... _ResultArgs>
 	struct task_all_node : public node_impl<std::tuple<_ResultArgs...>, std::function<void()>, std::function<void(_ResultArgs...)>>
 	{
 		using base_type = node_impl<std::tuple<_ResultArgs...>, std::function<void()>, std::function<void(_ResultArgs...)>>;
 		using this_type = task_all_node<_Ttuple, _ResultArgs...>;
 
-		using element_type = std::tuple<_ResultArgs...>;	//µÈ´ıµÄ½ÚµãµÄ½á¹ûÀàĞÍ
-		using result_type = std::tuple<_ResultArgs...>;		//±¾½ÚµãµÄ½á¹ûµÄÀàĞÍ
-		using result_tuple = result_type;					//±¾½ÚµãµÄ½á¹û´ò°ü³Étuple<>ºóµÄÀàĞÍ
-		using args_tuple_type = std::tuple<>;				//±¾½ÚµãµÄÈë²Î´ò°ü³Étuple<>ºóµÄÀàĞÍ
+		using element_type = std::tuple<_ResultArgs...>;	//ç­‰å¾…çš„èŠ‚ç‚¹çš„ç»“æœç±»å‹
+		using result_type = std::tuple<_ResultArgs...>;		//æœ¬èŠ‚ç‚¹çš„ç»“æœçš„ç±»å‹
+		using result_tuple = result_type;					//æœ¬èŠ‚ç‚¹çš„ç»“æœæ‰“åŒ…æˆtuple<>åçš„ç±»å‹
+		using args_tuple_type = std::tuple<>;				//æœ¬èŠ‚ç‚¹çš„å…¥å‚æ‰“åŒ…æˆtuple<>åçš„ç±»å‹
 
 		using task_tuple = detail::package_tuple_t<_Ttuple>;
 		task_tuple			_All_tasks;

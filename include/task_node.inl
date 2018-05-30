@@ -28,15 +28,15 @@
 
 namespace lib_shark_task
 {
-	//ÔÚtask_state_result»ù´¡ÉÏ£¬Ìá¹©²Ù×÷Ö´ĞĞµ±Ç°ÈÎÎñ½Úµã£¬Ö´ĞĞÏÂÒ»¸öÈÎÎñ½ÚµãµÄº¯Êı
+	//åœ¨task_state_resultåŸºç¡€ä¸Šï¼Œæä¾›æ“ä½œæ‰§è¡Œå½“å‰ä»»åŠ¡èŠ‚ç‚¹ï¼Œæ‰§è¡Œä¸‹ä¸€ä¸ªä»»åŠ¡èŠ‚ç‚¹çš„å‡½æ•°
 	template<class _Rtype, class _Taskf, class _Thenf = std::function<void()>>
 	struct node_impl : public node_result_<_Rtype>
 	{
 		using task_function = std::remove_reference_t<_Taskf>;
 		using then_function = std::remove_reference_t<_Thenf>;
 	protected:
-		task_function			_Thiz;			//Ö´ĞĞµ±Ç°ÈÎÎñ½Úµã
-		then_function			_Then;			//Ö´ĞĞÏÂÒ»¸öÈÎÎñ½Úµã
+		task_function			_Thiz;			//æ‰§è¡Œå½“å‰ä»»åŠ¡èŠ‚ç‚¹
+		then_function			_Then;			//æ‰§è¡Œä¸‹ä¸€ä¸ªä»»åŠ¡èŠ‚ç‚¹
 	public:
 		node_impl(task_function && fn, const task_set_exception_agent_sptr & exp)
 			: node_result_<_Rtype>(exp)
@@ -100,31 +100,31 @@ namespace lib_shark_task
 			}
 		}
 	protected:
-		//È¡Ö´ĞĞµ±Ç°ÈÎÎñ½ÚµãµÄº¯Êı£¬Ö»ÄÜÈ¡Ò»´Î¡£Ïß³Ì°²È«
+		//å–æ‰§è¡Œå½“å‰ä»»åŠ¡èŠ‚ç‚¹çš„å‡½æ•°ï¼Œåªèƒ½å–ä¸€æ¬¡ã€‚çº¿ç¨‹å®‰å…¨
 		inline task_function _Move_thiz()
 		{
 			std::unique_lock<std::mutex> _Lock(this->_Mtx());
-			return std::move(_Thiz);			//Ç¿ÆÈÖ»ÄÜµ÷ÓÃÒ»´Î
+			return std::move(_Thiz);			//å¼ºè¿«åªèƒ½è°ƒç”¨ä¸€æ¬¡
 		}
-		//È¡Ö´ĞĞÏÂÒ»¸öÈÎÎñ½ÚµãµÄº¯Êı£¬Ö»ÄÜÈ¡Ò»´Î¡£Ïß³Ì°²È«
+		//å–æ‰§è¡Œä¸‹ä¸€ä¸ªä»»åŠ¡èŠ‚ç‚¹çš„å‡½æ•°ï¼Œåªèƒ½å–ä¸€æ¬¡ã€‚çº¿ç¨‹å®‰å…¨
 		inline then_function _Move_then()
 		{
 			std::unique_lock<std::mutex> _Lock(this->_Mtx());
-			return std::move(_Then);			//Ç¿ÆÈÖ»ÄÜµ÷ÓÃÒ»´Î
+			return std::move(_Then);			//å¼ºè¿«åªèƒ½è°ƒç”¨ä¸€æ¬¡
 		}
 	};
 
-	//ÈÎÎñ½Úµã
-	//_RtypeÊÇ±¾½ÚµãµÄ·µ»ØÖµÀàĞÍ
-	//_PrevArgs...ÊÇÉÏÒ»¸öÈÎÎñ½ÚµãµÄ·µ»ØÖµ(Èç¹ûÉÏÒ»¸ö½Úµã·µ»ØÖµÊÇstd::tuple<>£¬Ôò_PrevArgsÊÇ½«tuple½Ó°üºóµÄ²ÎÊıÁĞ±í)
+	//ä»»åŠ¡èŠ‚ç‚¹
+	//_Rtypeæ˜¯æœ¬èŠ‚ç‚¹çš„è¿”å›å€¼ç±»å‹
+	//_PrevArgs...æ˜¯ä¸Šä¸€ä¸ªä»»åŠ¡èŠ‚ç‚¹çš„è¿”å›å€¼(å¦‚æœä¸Šä¸€ä¸ªèŠ‚ç‚¹è¿”å›å€¼æ˜¯std::tuple<>ï¼Œåˆ™_PrevArgsæ˜¯å°†tupleæ¥åŒ…åçš„å‚æ•°åˆ—è¡¨)
 	template<class _Rtype, class... _PrevArgs>
 	struct task_node : public node_impl<std::remove_reference_t<_Rtype>,
 						std::function<std::remove_reference_t<_Rtype>(_PrevArgs...)>, 
 						detail::unpack_tuple_fn_t<void, std::remove_reference_t<_Rtype>> >
 	{
-		using result_type = std::remove_reference_t<_Rtype>;			//±¾½ÚµãµÄ½á¹ûµÄÀàĞÍ
-		using result_tuple = detail::package_tuple_t<result_type>;		//±¾½ÚµãµÄ½á¹û´ò°ü³Étuple<>ºóµÄÀàĞÍ
-		using args_tuple_type = std::tuple<_PrevArgs...>;				//±¾½ÚµãµÄÈë²Î´ò°ü³Étuple<>ºóµÄÀàĞÍ
+		using result_type = std::remove_reference_t<_Rtype>;			//æœ¬èŠ‚ç‚¹çš„ç»“æœçš„ç±»å‹
+		using result_tuple = detail::package_tuple_t<result_type>;		//æœ¬èŠ‚ç‚¹çš„ç»“æœæ‰“åŒ…æˆtuple<>åçš„ç±»å‹
+		using args_tuple_type = std::tuple<_PrevArgs...>;				//æœ¬èŠ‚ç‚¹çš„å…¥å‚æ‰“åŒ…æˆtuple<>åçš„ç±»å‹
 
 		using base_type = node_impl<std::remove_reference_t<_Rtype>,
 			std::function<std::remove_reference_t<_Rtype>(_PrevArgs...)>,
@@ -175,9 +175,9 @@ namespace lib_shark_task
 	template<class... _PrevArgs>
 	struct task_node<void, _PrevArgs...> : public node_impl<int, std::function<void(_PrevArgs...)>>
 	{
-		using result_type = void;									//±¾½ÚµãµÄ½á¹ûµÄÀàĞÍ
-		using result_tuple = std::tuple<>;							//±¾½ÚµãµÄ½á¹û´ò°ü³Étuple<>ºóµÄÀàĞÍ
-		using args_tuple_type = std::tuple<_PrevArgs...>;			//±¾½ÚµãµÄÈë²Î´ò°ü³Étuple<>ºóµÄÀàĞÍ
+		using result_type = void;									//æœ¬èŠ‚ç‚¹çš„ç»“æœçš„ç±»å‹
+		using result_tuple = std::tuple<>;							//æœ¬èŠ‚ç‚¹çš„ç»“æœæ‰“åŒ…æˆtuple<>åçš„ç±»å‹
+		using args_tuple_type = std::tuple<_PrevArgs...>;			//æœ¬èŠ‚ç‚¹çš„å…¥å‚æ‰“åŒ…æˆtuple<>åçš„ç±»å‹
 
 		using base_type = node_impl<int, std::function<void(_PrevArgs...)>>;
 		using task_function = typename base_type::task_function;

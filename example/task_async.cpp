@@ -1,11 +1,8 @@
-//²âÊÔ½«ÈÎÎñ½Úµã·ÖÅäµ½Ö¸¶¨µÄÏß³Ì³Ø»·¾³ÀïÔËĞĞ
-
-#include <iostream>
-#include <string>
-
+//æµ‹è¯•å°†ä»»åŠ¡èŠ‚ç‚¹åˆ†é…åˆ°æŒ‡å®šçš„çº¿ç¨‹æ± ç¯å¢ƒé‡Œè¿è¡Œ
 #include "task.h"
 #include "task_context.h"
 #include "threadpool_context.h"
+#include "log_print.h"
 
 using namespace std::literals;
 
@@ -17,16 +14,16 @@ void test_task_async()
 
 	auto t = make_task([]
 	{
-		std::cout << "delay run " << std::this_thread::get_id() << std::endl;
+		log_print("delay run ", std::this_thread::get_id());
 		return std::this_thread::get_id();
 	}).then(pool_context, [](std::thread::id tid)
 	{
 		std::this_thread::sleep_for(5s);
-		std::cout << "run in another thread " << std::this_thread::get_id() << " " << (tid == std::this_thread::get_id()) << std::endl;
+		log_print("run in another thread ", std::this_thread::get_id(), " ", tid == std::this_thread::get_id());
 		return 2;
 	}).then(imm_context, [](int result)
 	{
-		std::cout << "run inplace thread " << std::this_thread::get_id() << " " << result << std::endl;
+		log_print("run inplace thread ", std::this_thread::get_id(), " ", result);
 		return result * 2;
 	});
 
@@ -34,9 +31,9 @@ void test_task_async()
 
 #if 1
 	auto f = t.get_future();
-	std::cout << "end value is " << f.get() << std::endl;
+	log_print("end value is ", f.get());
 #else
-	std::cout << "press any key to continue." << std::endl;
+	log_print("press any key to continue.");
 	_getch();
 #endif
 }

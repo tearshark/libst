@@ -1,11 +1,11 @@
-//ÊµÏÖÒ»¸öÁ´Ê½µ÷ÓÃµÄÈÎÎñÁ´¹¦ÄÜ£¬À´¼õÉÙcallback hellµÄÎÊÌâ
-//Í¨¹ıstd::future, »ñÈ¡×îºóÒ»¸öµ÷ÓÃµÄ½á¹û¡£Èç¹ûÖĞÍ¾·¢ÉúÁËÒì³££¬Ôòstd::future::get()»áÅ×³öÒì³£
-//Ö§³Ö½«ºóĞøµ÷ÓÃÖ¸¶¨µ½ÌØ¶¨µÄ¡°Ö´ĞĞ»·¾³¡±ÉÏÈ¥µ÷ÓÃ£¬´Ó¶ø¿ØÖÆÖ´ĞĞµÄÊ±»úºÍÏß³Ì
-//Ö§³ÖC++14/17¡£ÓÉÓÚÏë½ÚÊ¡Ò»Ğ©ÄÚ´æ£¬Ê¹ÓÃÁËVSµÄ_PromiseÊµÏÖ£¬¹ÊÖ»Ö§³ÖVS2015/VS2017
+//å®ç°ä¸€ä¸ªé“¾å¼è°ƒç”¨çš„ä»»åŠ¡é“¾åŠŸèƒ½ï¼Œæ¥å‡å°‘callback hellçš„é—®é¢˜
+//é€šè¿‡std::future, è·å–æœ€åä¸€ä¸ªè°ƒç”¨çš„ç»“æœã€‚å¦‚æœä¸­é€”å‘ç”Ÿäº†å¼‚å¸¸ï¼Œåˆ™std::future::get()ä¼šæŠ›å‡ºå¼‚å¸¸
+//æ”¯æŒå°†åç»­è°ƒç”¨æŒ‡å®šåˆ°ç‰¹å®šçš„â€œæ‰§è¡Œç¯å¢ƒâ€ä¸Šå»è°ƒç”¨ï¼Œä»è€Œæ§åˆ¶æ‰§è¡Œçš„æ—¶æœºå’Œçº¿ç¨‹
+//æ”¯æŒC++14/17ã€‚ç”±äºæƒ³èŠ‚çœä¸€äº›å†…å­˜ï¼Œä½¿ç”¨äº†VSçš„_Promiseå®ç°ï¼Œæ•…åªæ”¯æŒVS2015/VS2017
 
 #pragma once
 
-#pragma warning(disable : 4503)			//ÈÎÎñÁ´ºÜÈİÒ×ÀàĞÍÃû¹ı³¤£¬ËùÒÔ£¬½ûÖ¹Õâ¸ö¾¯¸æ
+#pragma warning(disable : 4503)			//ä»»åŠ¡é“¾å¾ˆå®¹æ˜“ç±»å‹åè¿‡é•¿ï¼Œæ‰€ä»¥ï¼Œç¦æ­¢è¿™ä¸ªè­¦å‘Š
 
 #include <assert.h>
 #include <tuple>
@@ -34,10 +34,10 @@ namespace lib_shark_task
 		using last_node = _LastNode;
 		using last_type = typename last_node::result_type;
 	private:
-		node_type_sptr						_Node;				//µÚÒ»¸öÈÎÎñ½Úµã¡£ÆäºóµÄthen/marshal£¬Õâ¸ö½ÚµãÊÇ²»±ä»¯µÄ
-		std::shared_ptr<last_node>			_Last;				//×îºóÒ»¸öÈÎÎñ½Úµã¡£Ã¿´Îthen/marshalºó£¬ĞÂµÄtaskµÄÕâ¸öÀàĞÍºÍÖµ·¢Éú±ä»¯
-		task_set_exception_agent_sptr		_Exception;			//´«µİÒì³£µÄ´úÀí½Ó¿Ú
-		mutable std::atomic<bool>			_Node_executed;		//_NodeÊÇ·ñÒÑ¾­Ö´ĞĞ¹ıÁË
+		node_type_sptr						_Node;				//ç¬¬ä¸€ä¸ªä»»åŠ¡èŠ‚ç‚¹ã€‚å…¶åçš„then/marshalï¼Œè¿™ä¸ªèŠ‚ç‚¹æ˜¯ä¸å˜åŒ–çš„
+		std::shared_ptr<last_node>			_Last;				//æœ€åä¸€ä¸ªä»»åŠ¡èŠ‚ç‚¹ã€‚æ¯æ¬¡then/marshalåï¼Œæ–°çš„taskçš„è¿™ä¸ªç±»å‹å’Œå€¼å‘ç”Ÿå˜åŒ–
+		task_set_exception_agent_sptr		_Exception;			//ä¼ é€’å¼‚å¸¸çš„ä»£ç†æ¥å£
+		mutable std::atomic<bool>			_Node_executed;		//_Nodeæ˜¯å¦å·²ç»æ‰§è¡Œè¿‡äº†
 	public:
 		task(const task_set_exception_agent_sptr & exp, const std::shared_ptr<last_node> & last, const std::shared_ptr<node_type> & first)
 			: _Node(first)
@@ -71,8 +71,10 @@ namespace lib_shark_task
 		task(const task & st) = delete;
 		task & operator = (const task & st) = delete;
 
-		//¿ªÊ¼Ö´ĞĞÈÎÎñÁ´µÄµÚÒ»¸ö½Úµã¡£
-		//Ö´ĞĞÍê±Ïºó£¬½«µÚÒ»¸öÈÎÎñ½ÚµãÉèÎªnullptr¡£ÕâÑù¾Í²»ÄÜÔÙ´Îµ÷ÓÃÁË
+		//å¼€å§‹æ‰§è¡Œä»»åŠ¡é“¾çš„ç¬¬ä¸€ä¸ªèŠ‚ç‚¹ã€‚
+		//æ‰§è¡Œå®Œæ¯•åï¼Œå°†ç¬¬ä¸€ä¸ªä»»åŠ¡èŠ‚ç‚¹è®¾ä¸ºnullptrã€‚è¿™æ ·å°±ä¸èƒ½å†æ¬¡è°ƒç”¨äº†ï¼ˆåˆ’æ‰ï¼‰
+		//æ‰§è¡Œå®Œæ¯•åï¼Œå¦‚æœä¸ä¿å­˜_Nodeï¼Œåˆ™when_all/when_anyé‡Œä¼šå‡ºç°æå‰è¢«ææ„çš„é£é™©ã€‚
+		//			æ•…åæ¥ä¿®æ”¹ä¸ºä½¿ç”¨_Node_executedæ¥æ ‡è®°æ˜¯å¦æ‰§è¡Œè¿‡ï¼Œä»è€Œå®ç°åªèƒ½æ‰§è¡Œä¸€æ¬¡çš„é€»è¾‘
 		template<class... _Args>
 		void operator()(_Args&&... args) const
 		{
@@ -84,15 +86,15 @@ namespace lib_shark_task
 				_Node->invoke_then_if();
 		}
 
-		//»ñÈ¡×îºóÒ»¸öÈÎÎñ½Úµã£¬¶ÔÓ¦µÄfuture¡£
+		//è·å–æœ€åä¸€ä¸ªä»»åŠ¡èŠ‚ç‚¹ï¼Œå¯¹åº”çš„futureã€‚
 		inline auto get_future()
 		{
 			assert(!_Last->is_retrieved());
 			return _Last->get_future();
 		}
 
-		//Ö´ĞĞÆ÷Ö»ÄÜ»ñÈ¡Ò»´Î¡£
-		//»ñÈ¡Íê±Ïºó£¬×ÔÉí²»ÄÜÔÙµ÷ÓÃoperator()ÁË----±Ï¾¹ÊÇrun_onceÓïÒå
+		//æ‰§è¡Œå™¨åªèƒ½è·å–ä¸€æ¬¡ã€‚
+		//è·å–å®Œæ¯•åï¼Œè‡ªèº«ä¸èƒ½å†è°ƒç”¨operator()äº†----æ¯•ç«Ÿæ˜¯run_onceè¯­ä¹‰
 		inline auto get_executor()
 		{
 			if (_Node_executed)
@@ -102,7 +104,7 @@ namespace lib_shark_task
 			return std::make_shared<task_executor<node_type>>(std::move(_Node));
 		}
 
-		//¸ù¾İÏÂÒ»¸öÈÎÎñ½Úµã£¬Éú³ÉĞÂµÄÈÎÎñÁ´¶ÔÏó
+		//æ ¹æ®ä¸‹ä¸€ä¸ªä»»åŠ¡èŠ‚ç‚¹ï¼Œç”Ÿæˆæ–°çš„ä»»åŠ¡é“¾å¯¹è±¡
 		template<class _Ftype>
 		inline auto then(_Ftype && fn)
 		{
@@ -124,8 +126,8 @@ namespace lib_shark_task
 			return task<next_node_type, node_type>{_Exception, st_next, _Node};
 		}
 
-		//¸ù¾İÏÂÒ»¸öÈÎÎñ½Úµã£¬Éú³ÉĞÂµÄÈÎÎñÁ´¶ÔÏó
-		//Ö¸¶¨´ËÈÎÎñ½Úµã±ØĞëÔÚctxËù´ú±íµÄÏß³Ì/Ê±»úÀïÔËĞĞ
+		//æ ¹æ®ä¸‹ä¸€ä¸ªä»»åŠ¡èŠ‚ç‚¹ï¼Œç”Ÿæˆæ–°çš„ä»»åŠ¡é“¾å¯¹è±¡
+		//æŒ‡å®šæ­¤ä»»åŠ¡èŠ‚ç‚¹å¿…é¡»åœ¨ctxæ‰€ä»£è¡¨çš„çº¿ç¨‹/æ—¶æœºé‡Œè¿è¡Œ
 		template<class _Context, class _Ftype>
 		inline auto then(_Context & ctx, _Ftype && fn)
 		{
@@ -264,8 +266,7 @@ namespace lib_shark_task
 		}
 	};
 
-	//¸ù¾İÒ»¸öĞÂµÄÈÎÎñ½Úµã£¬Éú³ÉÒ»¸öÈ«ĞÂµÄÈÎÎñÁ´
-	//¸ù¾İÒ»¸öĞÂµÄÈÎÎñ½Úµã£¬Éú³ÉÒ»¸öÈ«ĞÂµÄÈÎÎñÁ´
+	//æ ¹æ®ä¸€ä¸ªæ–°çš„ä»»åŠ¡èŠ‚ç‚¹ï¼Œç”Ÿæˆä¸€ä¸ªå…¨æ–°çš„ä»»åŠ¡é“¾
 	template<class _Ftype>
 	inline auto make_task(_Ftype && fn)
 	{

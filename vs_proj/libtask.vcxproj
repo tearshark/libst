@@ -159,6 +159,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\example\log_print.h" />
     <ClInclude Include="..\example\task_semaphore.h" />
     <ClInclude Include="..\example\threadpool_context.h" />
     <ClInclude Include="..\include\task.h" />

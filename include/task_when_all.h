@@ -28,13 +28,13 @@ namespace lib_shark_task
 		}
 	}
 
-	//µÈ´ı¶à¸öÈÎÎñÍê³É
-	//¶à¸öÈÎÎñµÄ½á¹û£¬·ÅÔÚÒ»¸öÆ´ºÏµÄtuple<>Àï
-	//Ê×ÏÈ×öÒ»¸öÈ«ĞÂµÄtask<task_all_node, task_all_node>
-	//	task_all_node::invoke_thiz Ö÷Òª¸ºÔğµ÷ÓÃËùÓĞµÄÈÎÎñ£¬ÒÔ±ãÓÚ¿ªÊ¼ÈÎÎñ
-	//		ÎªÃ¿¸öÈÎÎñÔìÒ»¸ötask_when_one¡£
-	//		task_when_one ¸ºÔğ½«½á¹û·ÅÈëµ½ task_all_nodeµÄÆ´ºÏtuple<>Àï£¬È»ºóÍ¨Öª task_all_node ÓĞÒ»¸öÈÎÎñÍê³É
-	//		task_all_node ÔÚËùÓĞÈÎÎñÍê³Éºó£¬µ÷ÓÃinvoke_then_if
+	//ç­‰å¾…å¤šä¸ªä»»åŠ¡å®Œæˆ
+	//å¤šä¸ªä»»åŠ¡çš„ç»“æœï¼Œæ”¾åœ¨ä¸€ä¸ªæ‹¼åˆçš„tuple<>é‡Œ
+	//é¦–å…ˆåšä¸€ä¸ªå…¨æ–°çš„task<task_all_node, task_all_node>
+	//	task_all_node::invoke_thiz ä¸»è¦è´Ÿè´£è°ƒç”¨æ‰€æœ‰çš„ä»»åŠ¡ï¼Œä»¥ä¾¿äºå¼€å§‹ä»»åŠ¡
+	//		ä¸ºæ¯ä¸ªä»»åŠ¡é€ ä¸€ä¸ªtask_when_oneã€‚
+	//		task_when_one è´Ÿè´£å°†ç»“æœæ”¾å…¥åˆ° task_all_nodeçš„æ‹¼åˆtuple<>é‡Œï¼Œç„¶åé€šçŸ¥ task_all_node æœ‰ä¸€ä¸ªä»»åŠ¡å®Œæˆ
+	//		task_all_node åœ¨æ‰€æœ‰ä»»åŠ¡å®Œæˆåï¼Œè°ƒç”¨invoke_then_if
 	//
 	template<class _Task, class... _TaskRest>
 	auto when_all(_Task&& tfirst, _TaskRest&&... rest)
@@ -56,13 +56,13 @@ namespace lib_shark_task
 		return task<first_node_type, first_node_type>{exp, st_first, st_first};
 	}
 
-	//µÈ´ı¶à¸öÈÎÎñÍê³É
-	//¶à¸öÈÎÎñµÄ½á¹ûÀàĞÍ¿Ï¶¨ÊÇÒ»ÖÂµÄ£¬ÊıÁ¿ÔËĞĞÊ±²ÅÄÜÈ·¶¨¡£¹Ê½á¹û·ÅÔÚvector<>Àï
-	//Ê×ÏÈ×öÒ»¸öÈ«ĞÂµÄtask<task_allv_node, task_allv_node>
-	//	task_allv_node::invoke_thiz Ö÷Òª¸ºÔğµ÷ÓÃËùÓĞµÄÈÎÎñ£¬ÒÔ±ãÓÚ¿ªÊ¼ÈÎÎñ¡£ÔÚÈÎÎñÎª¿ÕÊ±£¬µ±×÷È«²¿ÈÎÎñÒÑ¾­Íê³É´¦Àí¡£
-	//		ÎªÃ¿¸öÈÎÎñÔìÒ»¸ötask_when_one¡£
-	//		task_when_one ¸ºÔğ½«½á¹û·ÅÈëµ½ task_allv_nodeµÄvector<>Àï£¬È»ºóÍ¨Öª task_allv_node ÓĞÒ»¸öÈÎÎñÍê³É
-	//		task_allv_node ÔÚËùÓĞÈÎÎñÍê³Éºó£¬µ÷ÓÃinvoke_then_if
+	//ç­‰å¾…å¤šä¸ªä»»åŠ¡å®Œæˆ
+	//å¤šä¸ªä»»åŠ¡çš„ç»“æœç±»å‹è‚¯å®šæ˜¯ä¸€è‡´çš„ï¼Œæ•°é‡è¿è¡Œæ—¶æ‰èƒ½ç¡®å®šã€‚æ•…ç»“æœæ”¾åœ¨vector<>é‡Œ
+	//é¦–å…ˆåšä¸€ä¸ªå…¨æ–°çš„task<task_allv_node, task_allv_node>
+	//	task_allv_node::invoke_thiz ä¸»è¦è´Ÿè´£è°ƒç”¨æ‰€æœ‰çš„ä»»åŠ¡ï¼Œä»¥ä¾¿äºå¼€å§‹ä»»åŠ¡ã€‚åœ¨ä»»åŠ¡ä¸ºç©ºæ—¶ï¼Œå½“ä½œå…¨éƒ¨ä»»åŠ¡å·²ç»å®Œæˆå¤„ç†ã€‚
+	//		ä¸ºæ¯ä¸ªä»»åŠ¡é€ ä¸€ä¸ªtask_when_oneã€‚
+	//		task_when_one è´Ÿè´£å°†ç»“æœæ”¾å…¥åˆ° task_allv_nodeçš„vector<>é‡Œï¼Œç„¶åé€šçŸ¥ task_allv_node æœ‰ä¸€ä¸ªä»»åŠ¡å®Œæˆ
+	//		task_allv_node åœ¨æ‰€æœ‰ä»»åŠ¡å®Œæˆåï¼Œè°ƒç”¨invoke_then_if
 	//
 	template<class _Iter, typename _Fty = std::enable_if_t<detail::is_task<decltype(*std::declval<_Iter>())>::value, decltype(*std::declval<_Iter>())>>
 	auto when_all(_Iter _First, _Iter _Last)

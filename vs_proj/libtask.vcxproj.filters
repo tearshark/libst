@@ -48,6 +48,9 @@
     <ClInclude Include="..\example\task_semaphore.h">
       <Filter>example</Filter>
     </ClInclude>
+    <ClInclude Include="..\example\log_print.h">
+      <Filter>example</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="libtask.cpp">

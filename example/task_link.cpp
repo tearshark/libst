@@ -1,31 +1,28 @@
-//测试基本的任务链。每次then后返回一个新的task<node_first, node_last>对象
-
-#include <iostream>
-#include <string>
-
+//娴嬭瘯鍩烘湰鐨勪换鍔￠摼銆傛瘡娆hen鍚庤繑鍥炰竴涓柊鐨則ask<node_first, node_last>瀵硅薄
 #include "task.h"
 #include "task_context.h"
+#include "log_print.h"
 
 using namespace std::literals;
 
 int fn_first(int val)
 {
-	std::cout << "first" << std::endl;
+	log_print("first");
 	return val * 3;
 }
 std::string fn_second(int val)
 {
-	std::cout << "second " << val << std::endl;
+	log_print("second", val);
 	return "abcde"s;
 }
 std::tuple<int, std::string> fn_third(std::string str)
 {
-	std::cout << "third " << str << std::endl;
+	log_print("third", str);
 	return std::make_tuple(2, "cdefg"s);
 }
 void fn_four(int val, std::string str)
 {
-	std::cout << "four " << val << " " << str << std::endl;
+	log_print("four ", val, " ", str);
 }
 
 void test_task_link()
@@ -39,12 +36,12 @@ void test_task_link()
 
 	auto t = t4.then([]
 	{
-		std::cout << "lambda " << std::endl;
+		log_print("lambda ");
 		return 0;
 	});
 
 	auto f = t.get_future();
 	imm_context.add(t.get_executor());
 
-	std::cout << "end value is " << f.get() << std::endl;
+	log_print("end value is ", f.get());
 }

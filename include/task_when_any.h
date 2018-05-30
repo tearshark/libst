@@ -56,14 +56,14 @@ namespace lib_shark_task
 			when_any_impl2(all_node, 0, std::get<Idx>(tasks)...);
 		}
 
-		//µÈ´ı¶à¸öÈÎÎñÖ®Ò»Íê³É
-		//¶à¸öÈÎÎñµÄ½á¹û£¬ÀàĞÍ²»ÍêÈ«ÏàÍ¬£¬Òò´Ë£¬²ÉÓÃstd::anyÀ´´æ½á¹û£¬×îÖÕ½á¹ûÊÇstd::tuple<size_t, std::any>¡£
-		//size_t Ö¸Ê¾ÊÇÄÄÒ»¸öÈÎÎñÍê³É£»std::any ÊÇ¶ÔÓ¦µÄÈÎÎñµÄ½á¹û£¬ĞèÒªÍ¨¹ıstd::any_cast<>()À´»ñÈ¡¡£
-		//Ê×ÏÈ×öÒ»¸öÈ«ĞÂµÄtask<task_any_node, task_any_node>
-		//	task_any_node::invoke_thiz Ö÷Òª¸ºÔğµ÷ÓÃËùÓĞµÄÈÎÎñ£¬ÒÔ±ãÓÚ¿ªÊ¼ÈÎÎñ
-		//		ÎªÃ¿¸öÈÎÎñÔìÒ»¸ötask_when_one¡£
-		//		task_when_one ¸ºÔğ½«½á¹û·ÅÈëµ½ task_any_nodeµÄstd::anyÀï£¬È»ºóÍ¨Öª task_any_node ÓĞÒ»¸öÈÎÎñÍê³É
-		//		task_any_node ÔÚËùÓĞÈÎÎñÍê³Éºó£¬µ÷ÓÃinvoke_then_if
+		//ç­‰å¾…å¤šä¸ªä»»åŠ¡ä¹‹ä¸€å®Œæˆ
+		//å¤šä¸ªä»»åŠ¡çš„ç»“æœï¼Œç±»å‹ä¸å®Œå…¨ç›¸åŒï¼Œå› æ­¤ï¼Œé‡‡ç”¨std::anyæ¥å­˜ç»“æœï¼Œæœ€ç»ˆç»“æœæ˜¯std::tuple<size_t, std::any>ã€‚
+		//size_t æŒ‡ç¤ºæ˜¯å“ªä¸€ä¸ªä»»åŠ¡å®Œæˆï¼›std::any æ˜¯å¯¹åº”çš„ä»»åŠ¡çš„ç»“æœï¼Œéœ€è¦é€šè¿‡std::any_cast<>()æ¥è·å–ã€‚
+		//é¦–å…ˆåšä¸€ä¸ªå…¨æ–°çš„task<task_any_node, task_any_node>
+		//	task_any_node::invoke_thiz ä¸»è¦è´Ÿè´£è°ƒç”¨æ‰€æœ‰çš„ä»»åŠ¡ï¼Œä»¥ä¾¿äºå¼€å§‹ä»»åŠ¡
+		//		ä¸ºæ¯ä¸ªä»»åŠ¡é€ ä¸€ä¸ªtask_when_oneã€‚
+		//		task_when_one è´Ÿè´£å°†ç»“æœæ”¾å…¥åˆ° task_any_nodeçš„std::anyé‡Œï¼Œç„¶åé€šçŸ¥ task_any_node æœ‰ä¸€ä¸ªä»»åŠ¡å®Œæˆ
+		//		task_any_node åœ¨æ‰€æœ‰ä»»åŠ¡å®Œæˆåï¼Œè°ƒç”¨invoke_then_if
 		//
 		template<bool _All_same>
 		struct when_any_selector
@@ -85,13 +85,13 @@ namespace lib_shark_task
 			}
 		};
 
-		//µÈ´ı¶à¸öÈÎÎñÖ®Ò»Íê³É
-		//Èç¹ûËùÓĞÈÎÎñµÄ·µ»ØÀàĞÍ¶¼ÏàÍ¬£¬¿ÉÒÔ¼ò»¯Îª·µ»Ø(size_t, result_type...)
-		//Ê×ÏÈ×öÒ»¸öÈ«ĞÂµÄtask<task_anys_node, task_anys_node>
-		//	task_anys_node::invoke_thiz Ö÷Òª¸ºÔğµ÷ÓÃËùÓĞµÄÈÎÎñ£¬ÒÔ±ãÓÚ¿ªÊ¼ÈÎÎñ
-		//		ÎªÃ¿¸öÈÎÎñÔìÒ»¸ötask_when_one¡£
-		//		task_when_one ¸ºÔğ½«½á¹û·ÅÈëµ½ task_anys_nodeµÄÆ´ºÏtuple<>Àï£¬È»ºóÍ¨Öª task_anys_node ÓĞÒ»¸öÈÎÎñÍê³É
-		//		task_anys_node ÔÚËùÓĞÈÎÎñÍê³Éºó£¬µ÷ÓÃinvoke_then_if
+		//ç­‰å¾…å¤šä¸ªä»»åŠ¡ä¹‹ä¸€å®Œæˆ
+		//å¦‚æœæ‰€æœ‰ä»»åŠ¡çš„è¿”å›ç±»å‹éƒ½ç›¸åŒï¼Œå¯ä»¥ç®€åŒ–ä¸ºè¿”å›(size_t, result_type...)
+		//é¦–å…ˆåšä¸€ä¸ªå…¨æ–°çš„task<task_anys_node, task_anys_node>
+		//	task_anys_node::invoke_thiz ä¸»è¦è´Ÿè´£è°ƒç”¨æ‰€æœ‰çš„ä»»åŠ¡ï¼Œä»¥ä¾¿äºå¼€å§‹ä»»åŠ¡
+		//		ä¸ºæ¯ä¸ªä»»åŠ¡é€ ä¸€ä¸ªtask_when_oneã€‚
+		//		task_when_one è´Ÿè´£å°†ç»“æœæ”¾å…¥åˆ° task_anys_nodeçš„æ‹¼åˆtuple<>é‡Œï¼Œç„¶åé€šçŸ¥ task_anys_node æœ‰ä¸€ä¸ªä»»åŠ¡å®Œæˆ
+		//		task_anys_node åœ¨æ‰€æœ‰ä»»åŠ¡å®Œæˆåï¼Œè°ƒç”¨invoke_then_if
 		//
 		template<>
 		struct when_any_selector<true>
@@ -115,15 +115,15 @@ namespace lib_shark_task
 		};
 	}
 
-	//µÈ´ı¶à¸öÈÎÎñÖ®Ò»Íê³É
-	//Èç¹ûËùÓĞÈÎÎñµÄ·µ»ØÀàĞÍ¶¼ÏàÍ¬£¬Ôò²ÉÓÃ task<task_anys_node, task_anys_node>°æ±¾¡£ÆäĞĞÎª²Î¿¼ task_anys_node ËµÃ÷
-	//¶à¸öÈÎÎñµÄ½á¹û£¬ÀàĞÍÎ´±ØÏàÍ¬£¬Òò´Ë£¬²ÉÓÃstd::anyÀ´´æ½á¹û£¬×îÖÕ½á¹ûÊÇstd::tuple<size_t, std::any>¡£
-	//size_t Ö¸Ê¾ÊÇÄÄÒ»¸öÈÎÎñÍê³É£»std::any ÊÇ¶ÔÓ¦µÄÈÎÎñµÄ½á¹û£¬ĞèÒªÍ¨¹ıstd::any_cast<>()À´»ñÈ¡¡£
-	//Ê×ÏÈ×öÒ»¸öÈ«ĞÂµÄtask<task_all_node, task_all_node>
-	//	task_all_node::invoke_thiz Ö÷Òª¸ºÔğµ÷ÓÃËùÓĞµÄÈÎÎñ£¬ÒÔ±ãÓÚ¿ªÊ¼ÈÎÎñ
-	//		ÎªÃ¿¸öÈÎÎñÔìÒ»¸ötask_when_one¡£
-	//		task_when_one ¸ºÔğ½«½á¹û·ÅÈëµ½ task_all_nodeµÄÆ´ºÏtuple<>Àï£¬È»ºóÍ¨Öª task_all_node ÓĞÒ»¸öÈÎÎñÍê³É
-	//		task_all_node ÔÚËùÓĞÈÎÎñÍê³Éºó£¬µ÷ÓÃinvoke_then_if
+	//ç­‰å¾…å¤šä¸ªä»»åŠ¡ä¹‹ä¸€å®Œæˆ
+	//å¦‚æœæ‰€æœ‰ä»»åŠ¡çš„è¿”å›ç±»å‹éƒ½ç›¸åŒï¼Œåˆ™é‡‡ç”¨ task<task_anys_node, task_anys_node>ç‰ˆæœ¬ã€‚å…¶è¡Œä¸ºå‚è€ƒ task_anys_node è¯´æ˜
+	//å¤šä¸ªä»»åŠ¡çš„ç»“æœï¼Œç±»å‹æœªå¿…ç›¸åŒï¼Œå› æ­¤ï¼Œé‡‡ç”¨std::anyæ¥å­˜ç»“æœï¼Œæœ€ç»ˆç»“æœæ˜¯std::tuple<size_t, std::any>ã€‚
+	//size_t æŒ‡ç¤ºæ˜¯å“ªä¸€ä¸ªä»»åŠ¡å®Œæˆï¼›std::any æ˜¯å¯¹åº”çš„ä»»åŠ¡çš„ç»“æœï¼Œéœ€è¦é€šè¿‡std::any_cast<>()æ¥è·å–ã€‚
+	//é¦–å…ˆåšä¸€ä¸ªå…¨æ–°çš„task<task_all_node, task_all_node>
+	//	task_all_node::invoke_thiz ä¸»è¦è´Ÿè´£è°ƒç”¨æ‰€æœ‰çš„ä»»åŠ¡ï¼Œä»¥ä¾¿äºå¼€å§‹ä»»åŠ¡
+	//		ä¸ºæ¯ä¸ªä»»åŠ¡é€ ä¸€ä¸ªtask_when_oneã€‚
+	//		task_when_one è´Ÿè´£å°†ç»“æœæ”¾å…¥åˆ° task_all_nodeçš„æ‹¼åˆtuple<>é‡Œï¼Œç„¶åé€šçŸ¥ task_all_node æœ‰ä¸€ä¸ªä»»åŠ¡å®Œæˆ
+	//		task_all_node åœ¨æ‰€æœ‰ä»»åŠ¡å®Œæˆåï¼Œè°ƒç”¨invoke_then_if
 	//
 	template<class _Task, class... _TaskRest>
 	auto when_any(_Task&& tfirst, _TaskRest&&... rest)
@@ -137,13 +137,13 @@ namespace lib_shark_task
 		return selector_type::when_any(std::forward<_Task>(tfirst), std::forward<_TaskRest>(rest)...);
 	}
 
-	//µÈ´ı¶à¸öÈÎÎñÖ®Ò»Íê³É
-	//¶à¸öÈÎÎñµÄ½á¹ûÀàĞÍ¿Ï¶¨ÊÇÒ»ÖÂµÄ£¬¹Ê·µ»ØÖµµÄµÚÒ»¸ö²ÎÊıÖ¸Ê¾ÊÇÄÄÒ»¸öÈÎÎñÍê³É£¬ºóĞø²ÎÊıÊÇ½á¹û
-	//Ê×ÏÈ×öÒ»¸öÈ«ĞÂµÄtask<task_anyv_node, task_anyv_node>
-	//	task_anyv_node::invoke_thiz Ö÷Òª¸ºÔğµ÷ÓÃËùÓĞµÄÈÎÎñ£¬ÒÔ±ãÓÚ¿ªÊ¼ÈÎÎñ¡£ÔÚÈÎÎñÎª¿ÕÊ±£¬µ±×÷È«²¿ÈÎÎñÒÑ¾­Íê³É´¦Àí¡£
-	//		ÎªÃ¿¸öÈÎÎñÔìÒ»¸ötask_when_one¡£
-	//		task_when_one ¸ºÔğ½«½á¹û·ÅÈëµ½ task_anyv_nodeµÄtuple<size_t, Result...>Àï£¬È»ºóÍ¨Öª task_anyv_node ÓĞÒ»¸öÈÎÎñÍê³É
-	//		task_anyv_node ÔÚËùÓĞÈÎÎñÍê³Éºó£¬µ÷ÓÃinvoke_then_if
+	//ç­‰å¾…å¤šä¸ªä»»åŠ¡ä¹‹ä¸€å®Œæˆ
+	//å¤šä¸ªä»»åŠ¡çš„ç»“æœç±»å‹è‚¯å®šæ˜¯ä¸€è‡´çš„ï¼Œæ•…è¿”å›å€¼çš„ç¬¬ä¸€ä¸ªå‚æ•°æŒ‡ç¤ºæ˜¯å“ªä¸€ä¸ªä»»åŠ¡å®Œæˆï¼Œåç»­å‚æ•°æ˜¯ç»“æœ
+	//é¦–å…ˆåšä¸€ä¸ªå…¨æ–°çš„task<task_anyv_node, task_anyv_node>
+	//	task_anyv_node::invoke_thiz ä¸»è¦è´Ÿè´£è°ƒç”¨æ‰€æœ‰çš„ä»»åŠ¡ï¼Œä»¥ä¾¿äºå¼€å§‹ä»»åŠ¡ã€‚åœ¨ä»»åŠ¡ä¸ºç©ºæ—¶ï¼Œå½“ä½œå…¨éƒ¨ä»»åŠ¡å·²ç»å®Œæˆå¤„ç†ã€‚
+	//		ä¸ºæ¯ä¸ªä»»åŠ¡é€ ä¸€ä¸ªtask_when_oneã€‚
+	//		task_when_one è´Ÿè´£å°†ç»“æœæ”¾å…¥åˆ° task_anyv_nodeçš„tuple<size_t, Result...>é‡Œï¼Œç„¶åé€šçŸ¥ task_anyv_node æœ‰ä¸€ä¸ªä»»åŠ¡å®Œæˆ
+	//		task_anyv_node åœ¨æ‰€æœ‰ä»»åŠ¡å®Œæˆåï¼Œè°ƒç”¨invoke_then_if
 	//
 	template<class _Iter, typename _Fty = std::enable_if_t<detail::is_task<decltype(*std::declval<_Iter>())>::value, decltype(*std::declval<_Iter>())>>
 	auto when_any(_Iter _First, _Iter _Last)

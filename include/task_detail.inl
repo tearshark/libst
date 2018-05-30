@@ -16,11 +16,11 @@ namespace lib_shark_task
 		};
 
 		template<class _Fx>
-		using result_of_t = typename invoke_traits<_Fx>::result_type;			//İÍÈ¡º¯Êı(¶ÔÏó)_FxµÄ·µ»ØÖµ
+		using result_of_t = typename invoke_traits<_Fx>::result_type;			//èƒå–å‡½æ•°(å¯¹è±¡)_Fxçš„è¿”å›å€¼
 		template<class _Fx>
-		using args_tuple_t = typename invoke_traits<_Fx>::args_tuple_type;		//İÍÈ¡º¯Êı(¶ÔÏó)_FxµÄ²ÎÊıÁĞ±í£¬Õâ¸ö²ÎÊıÁĞ±íÓÃstd::tuple<>À´±í´ï
+		using args_tuple_t = typename invoke_traits<_Fx>::args_tuple_type;		//èƒå–å‡½æ•°(å¯¹è±¡)_Fxçš„å‚æ•°åˆ—è¡¨ï¼Œè¿™ä¸ªå‚æ•°åˆ—è¡¨ç”¨std::tuple<>æ¥è¡¨è¾¾
 		template<size_t _Idx, class _Fx>
-		using args_of_t = typename invoke_traits<_Fx>::template args_element<_Idx>::type;	//İÍÈ¡º¯Êı(¶ÔÏó)_FxµÄÌØ¶¨Ë÷ÒıµÄ²ÎÊıÀàĞÍ
+		using args_of_t = typename invoke_traits<_Fx>::template args_element<_Idx>::type;	//èƒå–å‡½æ•°(å¯¹è±¡)_Fxçš„ç‰¹å®šç´¢å¼•çš„å‚æ•°ç±»å‹
 
 		template<size_t _Idx, class _Tuple>
 		inline void _Fill_to_tuple_impl(_Tuple & t) {}
@@ -98,8 +98,8 @@ namespace lib_shark_task
 		}
 
 
-		//Ê¹ÓÃÉÏÒ»¸ö½ÚµãµÄ·µ»ØÖµ£¬×÷ÎªÏÂÒ»¸ö½ÚµãµÄ²ÎÊıµ÷ÓÃÏÂÒ»¸öÈÎÎñ½Úµã
-		//Èç¹ûÉÏÒ»¸ö½ÚµãµÄ·µ»ØÖµÊÇstd::tuple<...>£¬Ôò²ğ°ütupleÎª±ä²ÎÄ£°å
+		//ä½¿ç”¨ä¸Šä¸€ä¸ªèŠ‚ç‚¹çš„è¿”å›å€¼ï¼Œä½œä¸ºä¸‹ä¸€ä¸ªèŠ‚ç‚¹çš„å‚æ•°è°ƒç”¨ä¸‹ä¸€ä¸ªä»»åŠ¡èŠ‚ç‚¹
+		//å¦‚æœä¸Šä¸€ä¸ªèŠ‚ç‚¹çš„è¿”å›å€¼æ˜¯std::tuple<...>ï¼Œåˆ™æ‹†åŒ…tupleä¸ºå˜å‚æ¨¡æ¿
 		template<class _PrevArgs>
 		struct _Invoke_then_impl
 		{
@@ -251,7 +251,7 @@ namespace lib_shark_task
 				return _Apply_impl2(std::forward<_Fx>(f), std::forward<_Ty1>(t1), std::get<_Idx>(std::forward<_Tuple>(t))...);
 			}
 
-			//-------------------std::tuple<>°æ±¾-----------------------------------------------------------------------
+			//-------------------std::tuple<>ç‰ˆæœ¬-----------------------------------------------------------------------
 			template<class _Fx, class... _Tuple>
 			static inline decltype(auto) _Apply(_Fx&& f, std::tuple<_Tuple...>&& t)
 			{
@@ -283,15 +283,15 @@ namespace lib_shark_task
 			{
 				return _Apply_cat_impl(std::forward<_Fx>(f), std::forward<_Ty1>(t1), t, std::make_index_sequence<sizeof...(_Tuple)>{});
 			}
-			//-------------------std::tuple<>°æ±¾-----------------------------------------------------------------------
+			//-------------------std::tuple<>ç‰ˆæœ¬-----------------------------------------------------------------------
 
-			//-------------------±ä²Î°æ±¾-------------------------------------------------------------------------------
+			//-------------------å˜å‚ç‰ˆæœ¬-------------------------------------------------------------------------------
 			template<class _Fx, class... _PrevArgs2>
 			static inline decltype(auto) _Apply(_Fx&& f, _PrevArgs2&&... t)
 			{
 				return _Apply_impl2(std::forward<_Fx>(f), std::forward<_PrevArgs2>(t)...);
 			}
-			//-------------------±ä²Î°æ±¾-------------------------------------------------------------------------------
+			//-------------------å˜å‚ç‰ˆæœ¬-------------------------------------------------------------------------------
 		};
 		template<class _Fx, class... _PrevArgs2>
 		inline decltype(auto) _Apply_then(_Fx&& f, _PrevArgs2&&... args)
