@@ -344,5 +344,32 @@ namespace lib_shark_task
 		};
 		template<class _Ty>
 		using add_tuple_shared_ptr_t = typename add_tuple_shared_ptr<_Ty>::type;
+
+		template<typename _Ty>
+		struct __has_member_function_break_link
+		{
+		private:
+			template<typename U> 
+			static auto check_(int) -> decltype(std::declval<U>().break_link(), std::true_type());
+			template<typename U> 
+			static std::false_type check_(...); 
+		public: 
+			using type = decltype(check_<_Ty>(0));
+			static const bool value = std::is_same_v<type, std::true_type>;
+		};
+		template<class _Ty>
+		void _Break_link_impl(_Ty & node, std::true_type)
+		{
+			node.break_link();
+		}
+		template<class _Ty>
+		void _Break_link_impl(_Ty & node, std::false_type)
+		{
+		}
+		template<class _Ty>
+		void _Break_link(_Ty & node)
+		{
+			_Break_link_impl(node, typename __has_member_function_break_link<_Ty>::type{});
+		}
 	}
 }

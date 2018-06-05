@@ -22,6 +22,10 @@
 
 namespace lib_shark_task
 {
+#if LIBTASK_DEBUG_MEMORY
+	extern std::atomic<int> g_task_counter;
+#endif
+
 	constexpr auto _cb = std::placeholders::_1;
 	//using _ = decltype(std::ignore);
 
@@ -47,6 +51,13 @@ namespace lib_shark_task
 		{
 			assert(_Node != nullptr);
 			assert(_Last != nullptr);
+#if LIBTASK_DEBUG_MEMORY
+			long task_counter = ++g_task_counter;
+
+			char buffer[256];
+			sprintf_s(buffer, sizeof(buffer), "task ctor:%p, counter=%d\r\n", this, task_counter);
+			::OutputDebugStringA(buffer);
+#endif
 		}
 
 		task(task && _Right)
@@ -55,6 +66,13 @@ namespace lib_shark_task
 			, _Exception(std::move(_Right._Exception))
 			, _Node_executed(_Right._Node_executed.load())
 		{
+#if LIBTASK_DEBUG_MEMORY
+			long task_counter = ++g_task_counter;
+
+			char buffer[256];
+			sprintf_s(buffer, sizeof(buffer), "task ctor:%p, counter=%d\r\n", this, task_counter);
+			::OutputDebugStringA(buffer);
+#endif
 		}
 
 		task & operator = (task && _Right)
@@ -70,6 +88,21 @@ namespace lib_shark_task
 		}
 		task(const task & st) = delete;
 		task & operator = (const task & st) = delete;
+
+		~task()
+		{
+/*
+			if (_Node) detail::_Break_link(*_Node);
+			if (_Last) detail::_Break_link(*_Last);
+*/
+#if LIBTASK_DEBUG_MEMORY
+			long task_counter = --g_task_counter;
+
+			char buffer[256];
+			sprintf_s(buffer, sizeof(buffer), "task dtor:%p, counter=%d\r\n", this, task_counter);
+			::OutputDebugStringA(buffer);
+#endif
+		}
 
 		//开始执行任务链的第一个节点。
 		//执行完毕后，将第一个任务节点设为nullptr。这样就不能再次调用了（划掉）
@@ -193,25 +226,29 @@ namespace lib_shark_task
 		}
 
 		template<class _Nnode>
-		inline auto _Then_node(const std::shared_ptr<_Nnode> & st_next)
+		inline void _Then_node(const std::shared_ptr<_Nnode> & st_next)
 		{
 			assert(_Last != nullptr);
 			assert(!_Last->is_retrieved());
 			using next_node_type = std::remove_reference_t<_Nnode>;
 
 			_Last->_Set_then_if(detail::_Set_then_helper<next_node_type>{ st_next });
+/*
 			return task<next_node_type, node_type>{_Exception, st_next, _Node};
+*/
 		}
 
 		template<class _Context, class _Nnode>
-		inline auto _Then_node(_Context & ctx, const std::shared_ptr<_Nnode> & st_next)
+		inline void _Then_node(_Context & ctx, const std::shared_ptr<_Nnode> & st_next)
 		{
 			assert(_Last != nullptr);
 			assert(!_Last->is_retrieved());
 			using next_node_type = std::remove_reference_t<_Nnode>;
 
 			_Last->_Set_then_if(detail::_Set_then_ctx_helper<_Context, next_node_type>{ &ctx, st_next });
+/*
 			return task<next_node_type, node_type>{_Exception, st_next, _Node};
+*/
 		}
 	};
 

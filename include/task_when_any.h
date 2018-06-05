@@ -79,7 +79,7 @@ namespace lib_shark_task
 				auto st_first = std::make_shared<first_node_type>(exp, std::move(tfirst), std::move(rest)...);
 				exp->_Impl = st_first.get();
 
-				when_any_impl(st_first.get(), st_first->_All_tasks, std::make_index_sequence<std::tuple_size<cated_task_t>::value>{});
+				when_any_impl(st_first.get(), *st_first->_All_tasks, std::make_index_sequence<std::tuple_size<cated_task_t>::value>{});
 
 				return task<first_node_type, first_node_type>{exp, st_first, st_first};
 			}
@@ -108,7 +108,7 @@ namespace lib_shark_task
 				auto st_first = std::make_shared<first_node_type>(exp, std::move(tfirst), std::move(rest)...);
 				exp->_Impl = st_first.get();
 
-				when_any_impl(st_first.get(), st_first->_All_tasks, std::make_index_sequence<std::tuple_size<cated_task_t>::value>{});
+				when_any_impl(st_first.get(), *st_first->_All_tasks, std::make_index_sequence<std::tuple_size<cated_task_t>::value>{});
 
 				return task<first_node_type, first_node_type>{exp, st_first, st_first};
 			}
@@ -119,11 +119,11 @@ namespace lib_shark_task
 	//如果所有任务的返回类型都相同，则采用 task<task_anys_node, task_anys_node>版本。其行为参考 task_anys_node 说明
 	//多个任务的结果，类型未必相同，因此，采用std::any来存结果，最终结果是std::tuple<size_t, std::any>。
 	//size_t 指示是哪一个任务完成；std::any 是对应的任务的结果，需要通过std::any_cast<>()来获取。
-	//首先做一个全新的task<task_all_node, task_all_node>
-	//	task_all_node::invoke_thiz 主要负责调用所有的任务，以便于开始任务
+	//首先做一个全新的task<task_any_node, task_any_node>
+	//	task_any_node::invoke_thiz 主要负责调用所有的任务，以便于开始任务
 	//		为每个任务造一个task_when_one。
-	//		task_when_one 负责将结果放入到 task_all_node的拼合tuple<>里，然后通知 task_all_node 有一个任务完成
-	//		task_all_node 在所有任务完成后，调用invoke_then_if
+	//		task_when_one 负责将结果放入到 task_any_node的拼合tuple<>里，然后通知 task_any_node 有一个任务完成
+	//		task_any_node 在所有任务完成后，调用invoke_then_if
 	//
 	template<class _Task, class... _TaskRest>
 	auto when_any(_Task&& tfirst, _TaskRest&&... rest)

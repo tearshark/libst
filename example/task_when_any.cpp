@@ -97,16 +97,30 @@ void test_task_when_any_3()
 		})
 		;
 
+/*
 	tall();
 
 	auto f = tall.get_future();
 	auto val = f.get();
 	log_print("end index is ", val);
+*/
 }
 
 void test_task_when_any()
 {
+	using namespace st;
+	
 	test_task_when_any_1();
 	test_task_when_any_2();
+#if LIBTASK_DEBUG_MEMORY
+	for (int i = 0; i < 10; ++i)
+	{
+		test_task_when_any_3();
+		std::this_thread::sleep_for(100ms);
+		assert(g_node_counter.load() == 0);
+		assert(g_task_counter.load() == 0);
+	}
+#else
 	test_task_when_any_3();
+#endif
 }

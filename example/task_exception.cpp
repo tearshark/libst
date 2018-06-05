@@ -42,7 +42,7 @@ void test_task_exception()
 	{
 		log_print("end value is ", f.get());
 	}
-	catch (std::exception ex)
+	catch (std::exception & ex)
 	{
 		log_print(ex.what());
 	}

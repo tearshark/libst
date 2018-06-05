@@ -51,7 +51,7 @@ namespace lib_shark_task
 		auto st_first = std::make_shared<first_node_type>(exp, std::move(tfirst), std::move(rest)...);
 		exp->_Impl = st_first.get();
 
-		detail::when_all_impl(st_first.get(), st_first->_All_tasks, std::make_index_sequence<std::tuple_size<cated_task_t>::value>{});
+		detail::when_all_impl(st_first.get(), *st_first->_All_tasks, std::make_index_sequence<std::tuple_size<cated_task_t>::value>{});
 
 		return task<first_node_type, first_node_type>{exp, st_first, st_first};
 	}

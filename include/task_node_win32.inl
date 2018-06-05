@@ -1,9 +1,16 @@
 
 #pragma once
+#include <Windows.h>
+#include <debugapi.h>
 
 namespace lib_shark_task
 {
 #if defined(_MSC_VER)
+
+#if LIBTASK_DEBUG_MEMORY
+	extern std::atomic<int> g_node_counter;
+#endif
+
 	//实现存取任务节点的结果。
 	//存取结果值
 	//返回对应的future对象
@@ -23,9 +30,26 @@ namespace lib_shark_task
 			: _State(new std::_Associated_state<_Rtype>, true)
 			, _Exception(exp)
 		{
+#if LIBTASK_DEBUG_MEMORY
+			long node_counter = ++g_node_counter;
+
+			char buffer[256];
+			sprintf_s(buffer, sizeof(buffer), "node ctor:%p, counter=%d\r\n", this, node_counter);
+			::OutputDebugStringA(buffer);
+#endif
 		}
-		node_result_(node_result_ && _Right) = default;
-		node_result_ & operator = (node_result_ && _Right) = default;
+#if LIBTASK_DEBUG_MEMORY
+		~node_result_()
+		{
+			long node_counter = --g_node_counter;
+
+			char buffer[256];
+			sprintf_s(buffer, sizeof(buffer), "node dtor:%p, counter=%d\r\n", this, node_counter);
+			::OutputDebugStringA(buffer);
+		}
+#endif
+		node_result_(node_result_ && _Right) = delete;
+		node_result_ & operator = (node_result_ && _Right) = delete;
 		node_result_(const node_result_ & _Right) = delete;
 		node_result_ & operator = (const node_result_ & _Right) = delete;
 		

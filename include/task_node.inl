@@ -53,8 +53,8 @@ namespace lib_shark_task
 		{
 		}
 
-		node_impl(node_impl && _Right) = default;
-		node_impl & operator = (node_impl && _Right) = default;
+		node_impl(node_impl && _Right) = delete;
+		node_impl & operator = (node_impl && _Right) = delete;
 		node_impl(const node_impl & _Right) = delete;
 		node_impl & operator = (const node_impl & _Right) = delete;
 

@@ -52,12 +52,12 @@ namespace lib_shark_task
 		using cated_tuple = typename _Ndone::cated_tuple;
 		static const size_t cated_tuple_index = _Ndone::index;
 	private:
-		notify_node *						_Notify;
+		std::shared_ptr<notify_node>		_Notify;
 		size_t								_Index;
 	public:
 		task_when_one(const task_set_exception_agent_sptr & exp, notify_node * nn, size_t idx)
 			: base_type(exp)
-			, _Notify(nn)
+			, _Notify(std::static_pointer_cast<notify_node>(nn->shared_from_this()))
 			, _Index(idx)
 		{
 		}
@@ -65,6 +65,11 @@ namespace lib_shark_task
 		task_when_one & operator = (task_when_one && _Right) = default;
 		task_when_one(const task_when_one & _Right) = delete;
 		task_when_one & operator = (const task_when_one & _Right) = delete;
+
+		void break_link()
+		{
+			_Notify = nullptr;
+		}
 
 		template<class... _PrevArgs2>
 		bool invoke_thiz(_PrevArgs2&&... args)
@@ -123,7 +128,7 @@ namespace lib_shark_task
 	namespace detail
 	{
 		template<size_t _Idx, class _Anode, class _Task>
-		auto when_wait_one_impl(_Anode * all_node, size_t node_idx, _Task & tf)
+		void when_wait_one_impl(_Anode * all_node, size_t node_idx, _Task & tf)
 		{
 			using tuple_type = decltype(declval_task_last_node_result_tuple<_Task>());
 
@@ -137,7 +142,7 @@ namespace lib_shark_task
 			exp->_Impl = all_node;
 
 			auto st_next = std::make_shared<next_node_type>(exp, all_node, node_idx);
-			return tf.template _Then_node<next_node_type>(st_next);
+			tf.template _Then_node<next_node_type>(st_next);
 		}
 
 		template<class _Anode, class _Cont>

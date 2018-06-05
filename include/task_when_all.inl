@@ -26,12 +26,12 @@ namespace lib_shark_task
 		using args_tuple_type = std::tuple<>;				//本节点的入参打包成tuple<>后的类型
 
 		using task_tuple = detail::package_tuple_t<_Ttuple>;
-		task_tuple			_All_tasks;
+		std::shared_ptr<task_tuple>	_All_tasks;
 
 		template<class... _Tasks>
 		task_all_node(const task_set_exception_agent_sptr & exp, _Tasks&&... ts)
 			: base_type(exp)
-			, _All_tasks(std::forward<_Tasks>(ts)...)
+			, _All_tasks(std::make_shared<task_tuple>(std::forward<_Tasks>(ts)...))
 			, _Result_count(std::tuple_size<_Ttuple>::value)
 		{
 		}
@@ -66,6 +66,11 @@ namespace lib_shark_task
 			}
 		}
 
+		void break_link()
+		{
+			_All_tasks = nullptr;
+		}
+
 		template<class... Args2>
 		bool invoke_thiz(Args2&&... args)
 		{
@@ -74,10 +79,10 @@ namespace lib_shark_task
 			try
 			{
 				std::unique_lock<std::mutex> _Lock(this->_Mtx());
-				task_tuple all_task = std::move(_All_tasks);
+				auto all_task = std::move(_All_tasks);
 				_Lock.unlock();
 
-				for_each(all_task, [&](auto & ts)
+				for_each(*all_task, [&](auto & ts)
 				{
 					ts(args...);
 				});
@@ -98,10 +103,10 @@ namespace lib_shark_task
 			try
 			{
 				std::unique_lock<std::mutex> _Lock(this->_Mtx());
-				task_tuple all_task = std::move(_All_tasks);
+				auto all_task = std::move(_All_tasks);
 				_Lock.unlock();
 
-				for_each(all_task, [&](auto & ts)
+				for_each(*all_task, [&](auto & ts)
 				{
 					std::apply(ts, args);
 				});

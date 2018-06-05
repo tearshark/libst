@@ -83,6 +83,11 @@ namespace lib_shark_task
 			}
 		}
 
+		void break_link()
+		{
+			_All_tasks.clear();
+		}
+
 		template<class... Args2>
 		bool invoke_thiz(Args2&&... args)
 		{
