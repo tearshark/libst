@@ -31,8 +31,8 @@ int main()
 	//test_task_exception();
 	//test_task_marshal();
 	//test_task_thread_safe();
-	//test_task_when_all();
-	test_task_when_any();
+	test_task_when_all();
+	//test_task_when_any();
 
 	return 0;
 }

@@ -84,6 +84,7 @@ namespace lib_shark_task
 
 		void break_link()
 		{
+			base_type::break_link();
 			_All_tasks = nullptr;
 		}
 

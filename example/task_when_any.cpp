@@ -97,13 +97,39 @@ void test_task_when_any_3()
 		})
 		;
 
-/*
 	tall();
 
 	auto f = tall.get_future();
 	auto val = f.get();
 	log_print("end index is ", val);
-*/
+}
+
+void test_task_when_any_break_link()
+{
+	srand((int)time(nullptr));
+
+	using namespace st;
+
+	task<task_node<int>, task_node<void>> t1 = create_task_foo(1);
+	task<task_node<float>, task_node<void>> t2 = create_task_foo(2.0f);
+	task<task_node<std::string>, task_node<void>> t3 = create_task_foo("abc"s);
+	static_assert(!std::is_same<decltype(t1), decltype(t2)>::value, "");
+	static_assert(!std::is_same<decltype(t1), decltype(t3)>::value, "");
+	static_assert(!std::is_same<decltype(t2), decltype(t3)>::value, "");
+
+	auto tall = when_any(t1, t2, t3)
+		.then([](size_t idx, std::any val)
+		{
+			if (idx == 0)
+				log_print("task(", idx, ") completed. value is ", std::any_cast<int>(val));
+			if (idx == 1)
+				log_print("task(", idx, ") completed. value is ", std::any_cast<float>(val));
+			if (idx == 2)
+				log_print("task(", idx, ") completed. value is ", std::any_cast<std::string>(val));
+
+			return idx;
+		})
+		;
 }
 
 void test_task_when_any()
@@ -113,10 +139,14 @@ void test_task_when_any()
 	test_task_when_any_1();
 	test_task_when_any_2();
 #if LIBTASK_DEBUG_MEMORY
-	for (int i = 0; i < 10; ++i)
+	for (int i = 0; i < 100; ++i)
 	{
 		test_task_when_any_3();
 		std::this_thread::sleep_for(100ms);
+		assert(g_node_counter.load() == 0);
+		assert(g_task_counter.load() == 0);
+
+		test_task_when_any_break_link();
 		assert(g_node_counter.load() == 0);
 		assert(g_task_counter.load() == 0);
 	}

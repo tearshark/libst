@@ -58,6 +58,12 @@ namespace lib_shark_task
 		node_impl(const node_impl & _Right) = delete;
 		node_impl & operator = (const node_impl & _Right) = delete;
 
+		void break_link()
+		{
+			_Thiz = nullptr;
+			_Then = nullptr;
+		}
+
 		void invoke_then_if()
 		{
 			if (!this->_Ready)

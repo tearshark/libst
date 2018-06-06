@@ -37,20 +37,24 @@ namespace lib_shark_task
 
 		using last_node = _LastNode;
 		using last_type = typename last_node::result_type;
+		using last_node_stpr = std::shared_ptr<last_node>;
 	private:
 		node_type_sptr						_Node;				//第一个任务节点。其后的then/marshal，这个节点是不变化的
-		std::shared_ptr<last_node>			_Last;				//最后一个任务节点。每次then/marshal后，新的task的这个类型和值发生变化
+		last_node_stpr						_Last;				//最后一个任务节点。每次then/marshal后，新的task的这个类型和值发生变化
 		task_set_exception_agent_sptr		_Exception;			//传递异常的代理接口
 		mutable std::atomic<bool>			_Node_executed;		//_Node是否已经执行过了
 	public:
-		task(const task_set_exception_agent_sptr & exp, const std::shared_ptr<last_node> & last, const std::shared_ptr<node_type> & first)
-			: _Node(first)
-			, _Last(last)
+		//last不能为引用
+		//如果last和first是同一个对象（不是说内容指向同一个对象），则这里直接move(first)会造成last指向空对象
+		task(const task_set_exception_agent_sptr & exp, last_node_stpr last, node_type_sptr && first)
+			: _Node(std::forward<node_type_sptr>(first))
+			, _Last(std::move(last))
 			, _Exception(exp)
 			, _Node_executed(false)
 		{
 			assert(_Node != nullptr);
 			assert(_Last != nullptr);
+
 #if LIBTASK_DEBUG_MEMORY
 			long task_counter = ++g_task_counter;
 
@@ -91,10 +95,14 @@ namespace lib_shark_task
 
 		~task()
 		{
-/*
-			if (_Node) detail::_Break_link(*_Node);
-			if (_Last) detail::_Break_link(*_Last);
-*/
+			//某些任务会有循环引用的情况，故如果没执行过，需要主动打断循环引用
+			//执行过，则由具体的执行代码去打断循环引用
+			if (!_Node_executed.load())
+			{
+				if (_Node) detail::_Break_link(*_Node);
+				if (_Last) detail::_Break_link(*_Last);
+			}
+
 #if LIBTASK_DEBUG_MEMORY
 			long task_counter = --g_task_counter;
 
@@ -109,20 +117,24 @@ namespace lib_shark_task
 		//执行完毕后，如果不保存_Node，则when_all/when_any里会出现提前被析构的风险。
 		//			故后来修改为使用_Node_executed来标记是否执行过，从而实现只能执行一次的逻辑
 		template<class... _Args>
-		void operator()(_Args&&... args) const
+		void operator()(_Args&&... args)
 		{
+			assert(_Node != nullptr);
 			if (_Node_executed)
 				throw std::future_error(std::make_error_code(std::future_errc::promise_already_satisfied));
 
 			_Node_executed = true;
 			if (_Node->invoke_thiz(std::forward<_Args>(args)...))
 				_Node->invoke_then_if();
+			_Node = nullptr;
 		}
 
 		//获取最后一个任务节点，对应的future。
 		inline auto get_future()
 		{
+			assert(_Last != nullptr);
 			assert(!_Last->is_retrieved());
+
 			return _Last->get_future();
 		}
 
@@ -130,6 +142,7 @@ namespace lib_shark_task
 		//获取完毕后，自身不能再调用operator()了----毕竟是run_once语义
 		inline auto get_executor()
 		{
+			assert(_Node != nullptr);
 			if (_Node_executed)
 				throw std::future_error(std::make_error_code(std::future_errc::promise_already_satisfied));
 
@@ -155,8 +168,9 @@ namespace lib_shark_task
 			auto st_next = std::make_shared<next_node_type>(fn, _Exception);
 			_Exception->_Impl = st_next.get();
 			_Last->_Set_then_if(detail::_Set_then_helper<next_node_type>{ st_next });
+			_Last = nullptr;
 
-			return task<next_node_type, node_type>{_Exception, st_next, _Node};
+			return task<next_node_type, node_type>{_Exception, st_next, std::move(_Node)};
 		}
 
 		//根据下一个任务节点，生成新的任务链对象
@@ -178,8 +192,9 @@ namespace lib_shark_task
 			auto st_next = std::make_shared<next_node_type>(std::forward<_Ftype>(fn), _Exception);
 			_Exception->_Impl = st_next.get();
 			_Last->_Set_then_if(detail::_Set_then_ctx_helper<_Context, next_node_type>{ &ctx, st_next });
+			_Last = nullptr;
 
-			return task<next_node_type, node_type>{_Exception, st_next, _Node};
+			return task<next_node_type, node_type>{_Exception, st_next, std::move(_Node)};
 		}
 
 		template<class _Fcb, class... _Types>
@@ -197,8 +212,9 @@ namespace lib_shark_task
 			auto st_next = std::make_shared<next_node_type>(_Exception, std::forward<_Fcb>(fn), std::forward<_Types>(args)...);
 			_Exception->_Impl = st_next.get();
 			_Last->_Set_then_if(detail::_Set_then_helper<next_node_type>{ st_next });
+			_Last = nullptr;
 
-			return task<next_node_type, node_type>{_Exception, st_next, _Node};
+			return task<next_node_type, node_type>{_Exception, st_next, std::move(_Node)};
 		}
 
 		template<class _Context, class _Fcb, class... _Types>
@@ -216,8 +232,9 @@ namespace lib_shark_task
 			auto st_next = std::make_shared<next_node_type>(_Exception, std::forward<_Fcb>(fn), std::forward<_Types>(args)...);
 			_Exception->_Impl = st_next.get();
 			_Last->_Set_then_if(detail::_Set_then_ctx_helper<_Context, next_node_type>{ &ctx, st_next });
+			_Last = nullptr;
 
-			return task<next_node_type, node_type>{_Exception, st_next, _Node};
+			return task<next_node_type, node_type>{_Exception, st_next, std::move(_Node)};
 		}
 
 		inline task_set_exception_agent_sptr & _Get_exception_agent()
@@ -233,9 +250,6 @@ namespace lib_shark_task
 			using next_node_type = std::remove_reference_t<_Nnode>;
 
 			_Last->_Set_then_if(detail::_Set_then_helper<next_node_type>{ st_next });
-/*
-			return task<next_node_type, node_type>{_Exception, st_next, _Node};
-*/
 		}
 
 		template<class _Context, class _Nnode>
@@ -246,9 +260,6 @@ namespace lib_shark_task
 			using next_node_type = std::remove_reference_t<_Nnode>;
 
 			_Last->_Set_then_if(detail::_Set_then_ctx_helper<_Context, next_node_type>{ &ctx, st_next });
-/*
-			return task<next_node_type, node_type>{_Exception, st_next, _Node};
-*/
 		}
 	};
 
@@ -279,7 +290,7 @@ namespace lib_shark_task
 			auto st_next = std::make_shared<first_node_type>(std::forward<_Ftype>(fn), exp);
 			exp->_Impl = st_next.get();
 
-			return task<first_node_type, first_node_type>{exp, st_next, st_next};
+			return task<first_node_type, first_node_type>{exp, st_next, std::move(st_next)};
 		}
 	};
 	template<>
@@ -299,7 +310,7 @@ namespace lib_shark_task
 			auto st_next = std::make_shared<first_node_type>(std::forward<_Ftype>(fn), exp);
 			exp->_Impl = st_next.get();
 
-			return task<first_node_type, first_node_type>{exp, st_next, st_next};
+			return task<first_node_type, first_node_type>{exp, st_next, std::move(st_next)};
 		}
 	};
 
@@ -339,7 +350,7 @@ namespace lib_shark_task
 		auto st_next = std::make_shared<first_node_type>(exp, std::forward<_Fcb>(fn), std::forward<_Args>(args)...);
 		exp->_Impl = st_next.get();
 
-		return task<first_node_type, first_node_type>{exp, st_next, st_next};
+		return task<first_node_type, first_node_type>{exp, st_next, std::move(st_next)};
 	}
 /*
 	template<class _Context, class _Fcb, class... _Args>

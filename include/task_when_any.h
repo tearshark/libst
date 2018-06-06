@@ -81,7 +81,7 @@ namespace lib_shark_task
 
 				when_any_impl(st_first.get(), *st_first->_All_tasks, std::make_index_sequence<std::tuple_size<cated_task_t>::value>{});
 
-				return task<first_node_type, first_node_type>{exp, st_first, st_first};
+				return task<first_node_type, first_node_type>{exp, st_first, std::move(st_first)};
 			}
 		};
 
@@ -110,7 +110,7 @@ namespace lib_shark_task
 
 				when_any_impl(st_first.get(), *st_first->_All_tasks, std::make_index_sequence<std::tuple_size<cated_task_t>::value>{});
 
-				return task<first_node_type, first_node_type>{exp, st_first, st_first};
+				return task<first_node_type, first_node_type>{exp, st_first, std::move(st_first)};
 			}
 		};
 	}

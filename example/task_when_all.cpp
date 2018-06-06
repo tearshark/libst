@@ -1,7 +1,6 @@
 #include <list>
 
-#include "task.h"
-#include "task_when_all.h"
+#include "libtask.h"
 #include "log_print.h"
 
 using namespace std::literals;
@@ -43,10 +42,13 @@ void test_task_when_all_1()
 	log_print("end value is ", val);
 }
 
-static auto create_task_foo(int val)
+template<class _Ty>
+static auto create_task_foo(const _Ty & val)
 {
-	return st::make_task([=]
+	return st::make_task(st::async_context, [=]
 	{
+		std::this_thread::sleep_for(1ms * (rand() % 100));
+
 		log_print("task foo, val = ", val);
 		return val;
 	});
@@ -82,8 +84,47 @@ void test_task_when_all_2()
 	log_print("end value is ", val);
 }
 
+void test_task_when_all_break_link()
+{
+	using namespace st;
+
+	std::list<decltype(create_task_foo(0))> v;
+	for (int i = 1; i < 10; ++i)
+		v.emplace_back(create_task_foo(i));
+
+	auto tall = when_all(v.begin(), v.end())
+		.then([](std::vector<int> v)
+		{
+			if (v.empty())
+				log_print("none task.");
+			else
+				log_print(v.size(), " task(s) completed.");
+
+			int val = 0;
+			for (auto t : v)
+				val += t;
+			return val;
+		})
+		;
+}
+
 void test_task_when_all()
 {
+	using namespace st;
+
 	test_task_when_all_1();
+#if LIBTASK_DEBUG_MEMORY
+	for (int i = 0; i < 100; ++i)
+	{
+		test_task_when_all_2();
+		assert(g_node_counter.load() == 0);
+		assert(g_task_counter.load() == 0);
+
+		test_task_when_all_break_link();
+		assert(g_node_counter.load() == 0);
+		assert(g_task_counter.load() == 0);
+	}
+#else
 	test_task_when_all_2();
+#endif
 }

@@ -38,6 +38,8 @@ namespace lib_shark_task
 	//_Ndone : when_node_args<>类型
 	//_PrevArgs : 上一个节点的返回值
 	//最后要将_PrevArgs...合并到 when_node_args<>::cated_tuple 里面去，然后通知 when_node_args<>::notify_node::_On_result()
+	//task_when_one 用于when_all/when_any。
+	//并且由于when_any的节点的生存期管理问题，必须出现循环引用。由task<>来负责断开循环引用
 	template<class _Ndone, class... _PrevArgs>
 	struct task_when_one : public node_impl<int, std::function<void(_PrevArgs...)>>
 	{
@@ -50,10 +52,10 @@ namespace lib_shark_task
 
 		using notify_node = typename _Ndone::notify_node;
 		using cated_tuple = typename _Ndone::cated_tuple;
-		static const size_t cated_tuple_index = _Ndone::index;
+		static const size_t cated_tuple_index = _Ndone::index;		//本节点在tuple中的索引
 	private:
-		std::shared_ptr<notify_node>		_Notify;
-		size_t								_Index;
+		std::shared_ptr<notify_node>		_Notify;				//本节点执行完毕后，通知的下一个节点
+		size_t								_Index;					//本节点在vector中的索引
 	public:
 		task_when_one(const task_set_exception_agent_sptr & exp, notify_node * nn, size_t idx)
 			: base_type(exp)
@@ -68,6 +70,7 @@ namespace lib_shark_task
 
 		void break_link()
 		{
+			base_type::break_link();
 			_Notify = nullptr;
 		}
 
@@ -168,7 +171,7 @@ namespace lib_shark_task
 
 			when_iter_impl(st_first.get(), st_first->_All_tasks);
 
-			return task<first_node_type, first_node_type>{exp, st_first, st_first};
+			return task<first_node_type, first_node_type>{exp, st_first, std::move(st_first)};
 		}
 
 	}
