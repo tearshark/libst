@@ -66,12 +66,12 @@ namespace std
 			//const long maxLong = 0x7fffffff;
 			m_hSema = CreateSemaphoreW(nullptr, initialCount, maxLong, nullptr);
 		}
-		semaphore(semaphore && _Right)
+		semaphore(semaphore && _Right) noexcept
 		{
 			m_hSema = _Right.m_hSema;
 			_Right.m_hSema = nullptr;
 		}
-		semaphore & operator = (semaphore && _Right)
+		semaphore & operator = (semaphore && _Right) noexcept
 		{
 			if (this != &_Right)
 			{
@@ -162,12 +162,12 @@ namespace std
 			assert(initialCount >= 0);
 			semaphore_create(mach_task_self(), &m_hSema, SYNC_POLICY_FIFO, initialCount);
 		}
-		semaphore(semaphore && _Right)
+		semaphore(semaphore && _Right) noexcept
 			: m_hSema(_Right.m_hSema)
 		{
 			_Right.m_hSema = nullptr;
 		}
-		semaphore & operator = (semaphore && _Right)
+		semaphore & operator = (semaphore && _Right) noexcept
 		{
 			if (this != &_Right)
 			{
@@ -280,12 +280,12 @@ namespace std
 			m_hSema = new sem_t;
 			sem_init(m_hSema, 0, initialCount);
 		}
-		semaphore(semaphore && _Right)
+		semaphore(semaphore && _Right) noexcept
 		{
 			m_hSema = _Right.m_hSema;
 			_Right.m_hSema = nullptr;
 		}
-		semaphore & operator = (semaphore && _Right)
+		semaphore & operator = (semaphore && _Right) noexcept
 		{
 			if (this != &_Right)
 			{
@@ -402,12 +402,12 @@ namespace std
 			m_hSema = new sem_t;
 			sem_init(m_hSema, 0, initialCount);
 		}
-		semaphore(semaphore && _Right)
+		semaphore(semaphore && _Right) noexcept
 		{
 			m_hSema = _Right.m_hSema;
 			_Right.m_hSema = nullptr;
 		}
-		semaphore & operator = (semaphore && _Right)
+		semaphore & operator = (semaphore && _Right) noexcept
 		{
 			if (this != &_Right)
 			{

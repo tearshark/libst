@@ -11,7 +11,7 @@ namespace std
 	class divide_0_exception : public exception
 	{
 	public:
-		virtual const char* what() const _NOEXCEPT
+		virtual const char* what() const 
 		{
 			return "divide by zero";
 		}

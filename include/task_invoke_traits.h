@@ -83,6 +83,36 @@ namespace lib_shark_task
 
 		//成员函数，const版本
 		template<class _Ret, class _Ctype, class... _Args>
+		struct invoke_traits<_Ret(_Ctype::*)(_Args...) &> : public native_invoke_traits<_Ret, _Args...>
+		{
+			using memfun_type = std::true_type;
+			using callee_type = _Ctype;
+			using this_args_type = callee_type & ;
+
+			typedef _Ret(_Ctype::*pointer_type)(_Args...);
+			template<class... _Rest>
+			static inline _Ret Invoke_(const pointer_type & f, this_args_type obj, _Args&&... args, _Rest...)
+			{
+				return (obj.*f)(std::forward<_Args>(args)...);
+			}
+		};
+
+		template<class _Ret, class _Ctype, class... _Args>
+		struct invoke_traits<_Ret(_Ctype::*)(_Args...) &&> : public native_invoke_traits<_Ret, _Args...>
+		{
+			using memfun_type = std::true_type;
+			using callee_type = _Ctype;
+			using this_args_type = callee_type && ;
+
+			typedef _Ret(_Ctype::*pointer_type)(_Args...);
+			template<class... _Rest>
+			static inline _Ret Invoke_(const pointer_type & f, this_args_type obj, _Args&&... args, _Rest...)
+			{
+				return (obj.*f)(std::forward<_Args>(args)...);
+			}
+		};
+
+		template<class _Ret, class _Ctype, class... _Args>
 		struct invoke_traits<_Ret(_Ctype::*)(_Args...) const> : public native_invoke_traits<_Ret, _Args...>
 		{
 			using memfun_type = std::true_type;
@@ -122,6 +152,51 @@ namespace lib_shark_task
 			using this_args_type = const volatile callee_type &;
 
 			typedef _Ret(_Ctype::*pointer_type)(_Args...) const volatile;
+			template<class... _Rest>
+			static inline _Ret Invoke_(const pointer_type & f, this_args_type obj, _Args&&... args, _Rest...)
+			{
+				return (obj.*f)(std::forward<_Args>(args)...);
+			}
+		};
+
+		template<class _Ret, class _Ctype, class... _Args>
+		struct invoke_traits<_Ret(_Ctype::*)(_Args...) const &> : public native_invoke_traits<_Ret, _Args...>
+		{
+			using memfun_type = std::true_type;
+			using callee_type = _Ctype;
+			using this_args_type = const callee_type &;
+
+			typedef _Ret(_Ctype::*pointer_type)(_Args...);
+			template<class... _Rest>
+			static inline _Ret Invoke_(const pointer_type & f, this_args_type obj, _Args&&... args, _Rest...)
+			{
+				return (obj.*f)(std::forward<_Args>(args)...);
+			}
+		};
+
+		template<class _Ret, class _Ctype, class... _Args>
+		struct invoke_traits<_Ret(_Ctype::*)(_Args...) volatile &> : public native_invoke_traits<_Ret, _Args...>
+		{
+			using memfun_type = std::true_type;
+			using callee_type = _Ctype;
+			using this_args_type = volatile callee_type & ;
+
+			typedef _Ret(_Ctype::*pointer_type)(_Args...);
+			template<class... _Rest>
+			static inline _Ret Invoke_(const pointer_type & f, this_args_type obj, _Args&&... args, _Rest...)
+			{
+				return (obj.*f)(std::forward<_Args>(args)...);
+			}
+		};
+
+		template<class _Ret, class _Ctype, class... _Args>
+		struct invoke_traits<_Ret(_Ctype::*)(_Args...) volatile &&> : public native_invoke_traits<_Ret, _Args...>
+		{
+			using memfun_type = std::true_type;
+			using callee_type = _Ctype;
+			using this_args_type = volatile callee_type && ;
+
+			typedef _Ret(_Ctype::*pointer_type)(_Args...);
 			template<class... _Rest>
 			static inline _Ret Invoke_(const pointer_type & f, this_args_type obj, _Args&&... args, _Rest...)
 			{

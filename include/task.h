@@ -64,7 +64,7 @@ namespace lib_shark_task
 #endif
 		}
 
-		task(task && _Right)
+		task(task && _Right) noexcept
 			: _Node(std::move(_Right._Node))
 			, _Last(std::move(_Right._Last))
 			, _Exception(std::move(_Right._Exception))
@@ -79,7 +79,7 @@ namespace lib_shark_task
 #endif
 		}
 
-		task & operator = (task && _Right)
+		task & operator = (task && _Right) noexcept
 		{
 			if (this != &_Right)
 			{

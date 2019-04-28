@@ -23,7 +23,7 @@
     <ProjectGuid>{FD137E57-E96F-485A-B37D-F977188E8DA4}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>libtask</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
