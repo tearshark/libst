@@ -25,7 +25,7 @@ struct threadpool_context
 			while (!tasks.empty())
 				tasks.pop();
 		}
-		cv_task.signal((int)th_pool.size());
+		cv_task.release((int)th_pool.size());
 
 		for (auto & th : th_pool)
 			th.join();
@@ -38,7 +38,7 @@ struct threadpool_context
 			std::unique_lock<std::mutex> lock__(mtx_task);
 			tasks.push(runner);
 		}
-		cv_task.signal();
+		cv_task.release();
 	}
 
 private:
@@ -47,7 +47,7 @@ private:
 		st::executor_sptr runner;
 		for (;;)
 		{
-			cv_task.wait();
+			cv_task.acquire();
 			{
 				std::unique_lock<std::mutex> lock__(mtx_task);
 				if (tasks.empty())

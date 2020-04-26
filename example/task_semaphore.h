@@ -28,22 +28,22 @@ namespace std
 			return m_hSema != nullptr;
 		}
 
-		bool wait()
+		bool acquire()
 		{
 			return WaitForSingleObject(m_hSema, INFINITE) == WAIT_OBJECT_0;
 		}
 
-		bool try_wait()
+		bool try_acquire()
 		{
 			return WaitForSingleObject(m_hSema, 0) == WAIT_OBJECT_0;
 		}
 
-		bool timed_wait(std::chrono::microseconds dt)
+		bool try_acquire_for(std::chrono::microseconds dt)
 		{
 			return WaitForSingleObject(m_hSema, (unsigned long)(dt.count() / 1000)) == WAIT_OBJECT_0;
 		}
 
-		void signal(int count = 1)
+		void release(int count = 1)
 		{
 			ReleaseSemaphore(m_hSema, count, nullptr);
 		}
@@ -110,17 +110,17 @@ namespace std
 			return m_hSema != nullptr;
 		}
 
-		void wait()
+		void acquire()
 		{
 			semaphore_wait(m_hSema);
 		}
 
-		bool try_wait()
+		bool try_acquire()
 		{
-			return timed_wait(0);
+			return try_acquire_for(0);
 		}
 
-		bool timed_wait(std::chrono::microseconds dt)
+		bool try_acquire_for(std::chrono::microseconds dt)
 		{
 			mach_timespec_t ts;
 
@@ -132,12 +132,12 @@ namespace std
 			return rc != KERN_OPERATION_TIMED_OUT && rc != KERN_ABORTED;
 		}
 
-		void signal()
+		void release()
 		{
 			semaphore_signal(m_hSema);
 		}
 
-		void signal(int count)
+		void release(int count)
 		{
 			while (count-- > 0)
 			{
@@ -205,7 +205,7 @@ namespace std
 			return m_hSema != nullptr;
 		}
 
-		void wait()
+		void acquire()
 		{
 			// http://stackoverflow.com/questions/2013181/gdb-causes-sem-wait-to-fail-with-eintr-error
 			int rc;
@@ -214,7 +214,7 @@ namespace std
 			} while (rc == -1 && errno == EINTR);
 		}
 
-		bool try_wait()
+		bool try_acquire()
 		{
 			int rc;
 			do {
@@ -223,7 +223,7 @@ namespace std
 			return !(rc == -1 && errno == EAGAIN);
 		}
 
-		bool timed_wait(std::chrono::microseconds dt)
+		bool try_acquire_for(std::chrono::microseconds dt)
 		{
 			struct timespec ts;
 			const int usecs_in_1_sec = 1000000;
@@ -249,12 +249,12 @@ namespace std
 			return !(rc == -1 && errno == ETIMEDOUT);
 		}
 
-		void signal()
+		void release()
 		{
 			sem_post(m_hSema);
 		}
 
-		void signal(int count)
+		void release(int count)
 		{
 			while (count-- > 0)
 			{
@@ -327,7 +327,7 @@ namespace std
 			return m_hSema != nullptr;
 		}
 
-		void wait()
+		void acquire()
 		{
 			// http://stackoverflow.com/questions/2013181/gdb-causes-sem-wait-to-fail-with-eintr-error
 			int rc;
@@ -336,7 +336,7 @@ namespace std
 			} while (rc == -1 && errno == EINTR);
 		}
 
-		bool try_wait()
+		bool try_acquire()
 		{
 			int rc;
 			do {
@@ -345,7 +345,7 @@ namespace std
 			return !(rc == -1 && errno == EAGAIN);
 		}
 
-		bool timed_wait(std::chrono::microseconds dt)
+		bool try_acquire_for(std::chrono::microseconds dt)
 		{
 			struct timespec ts;
 			const int usecs_in_1_sec = 1000000;
@@ -371,12 +371,12 @@ namespace std
 			return !(rc == -1 && errno == ETIMEDOUT);
 		}
 
-		void signal()
+		void release()
 		{
 			sem_post(m_hSema);
 		}
 
-		void signal(int count)
+		void release(int count)
 		{
 			while (count-- > 0)
 			{
